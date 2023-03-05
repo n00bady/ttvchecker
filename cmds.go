@@ -14,10 +14,13 @@ import (
 const url string = "https://www.twitch.tv/"
 const ISLIVE string = "\"isLiveBroadcast\":true"
 
-type stream struct { name string
+type stream struct { 
+  name string
   live bool
 }
 
+// Checks the state of all the streamers on the config file
+// and prints a table with that state
 func checkStreamers() (streams []stream) {
 
   list := createStreamerlist()
@@ -28,6 +31,7 @@ func checkStreamers() (streams []stream) {
   }
   defer f.Close()
 
+  var results []stream
   fScanner := bufio.NewScanner(f)
   fScanner.Split(bufio.ScanLines)
   for fScanner.Scan() {
@@ -39,24 +43,27 @@ func checkStreamers() (streams []stream) {
     }
     defer resp.Body.Close()
 
-    if resp.StatusCode != 200 {
+    if resp.StatusCode != http.StatusOK {
       fmt.Println("Response Status Code: ", resp.StatusCode)
       os.Exit(1)
     }
-    // make it prettier
-    if isLive := parse(resp); isLive {
-      fmt.Println("Is ", streamer, "live ? ", isLive)
-    } else {
-      fmt.Println("Is ", streamer, "live ?", isLive)
+
+    isLive, err := parse(resp)
+    if err != nil {
+      fmt.Println(err)
+      os.Exit(1)
     }
+    results = append(results, stream{name: streamer, live: isLive})
 
     // add a delay between each request so we won't get banned :S
     time.Sleep(5 * time.Second)
   }
+  pPrint(results)
 
   return nil
 }
 
+// Adds a streamer to the config file
 func addStreamer(name string) {
 
   list := createStreamerlist()
@@ -76,6 +83,7 @@ func addStreamer(name string) {
   fmt.Println(name, " added.")
 }
 
+// Deletes a streamer from the config file
 func delStreamer(name string) {
 
   var tmp []string
