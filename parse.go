@@ -1,13 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
+// Takes an http response and return a bool and an error
+// First I parse the html response and search for the
+// <script> token that has type = application/ls+json
+// this one only exist on streams that are live
+// and include inside various info about the stream
+// such as the "isLiveBroadcast":true which if it exists
+// it's obviously an Live stream
+// I imagine there is better way to parse the json-ld ???
 func parse(response *http.Response) (bool, error) {
   islive := false
   
@@ -20,7 +27,6 @@ func parse(response *http.Response) (bool, error) {
     if t == "application/ld+json" {
       // could this be parsed in a better way ?
       // it's json-ld
-      fmt.Println(s.Text())
       if strings.Contains(s.Text(), "\"isLiveBroadcast\":true") {
         islive = true
       }
