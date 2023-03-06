@@ -13,6 +13,7 @@ import (
 
 const url string = "https://www.twitch.tv/"
 const ISLIVE string = "\"isLiveBroadcast\":true"
+const userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/110.0"
 
 type stream struct { 
   name string
@@ -46,11 +47,19 @@ func checkStreamers() (streams []stream) {
 
   // take each line by the file and make a get http request
   var results []stream
+  client := &http.Client{}
   fScanner := bufio.NewScanner(f)
   fScanner.Split(bufio.ScanLines)
   for fScanner.Scan() {
     streamer := fScanner.Text()
-    resp, err := http.Get(url+streamer)
+    fmt.Println("Checking ", streamer, "...")
+    // create the request add a user agent and get a response
+    req, err := http.NewRequest("GET", url+streamer, nil)
+    if err != nil {
+      fmt.Println(err)
+    }
+    req.Header.Set("User-Agent", userAgent)
+    resp, err := client.Do(req)
     if err != nil {
       fmt.Println(err)
       os.Exit(1)
