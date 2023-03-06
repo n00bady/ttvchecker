@@ -17,6 +17,7 @@ const ISLIVE string = "\"isLiveBroadcast\":true"
 type stream struct { 
   name string
   live bool
+  link string
 }
 
 // Checks the state of all the streamers on the config file
@@ -66,7 +67,7 @@ func checkStreamers() (streams []stream) {
       fmt.Println(err)
       os.Exit(1)
     }
-    results = append(results, stream{name: streamer, live: isLive})
+    results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
 
     // add a delay between each request so we won't get banned :S
     time.Sleep(3 * time.Second)

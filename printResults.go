@@ -34,6 +34,7 @@ func pPrint(s []stream) error {
       {Align: simpletable.AlignLeft, Text: "#"},
       {Align: simpletable.AlignLeft, Text: "Streamer"},
       {Align: simpletable.AlignLeft, Text: "Live?"},
+      {Align: simpletable.AlignLeft, Text: "URL"},
     },
   }
 
@@ -43,14 +44,16 @@ func pPrint(s []stream) error {
       r := []*simpletable.Cell{
         {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
         {Text: n.name},
-        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%s%t%s",green, n.live, reset)},
+        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sLive!%s",green, reset)},
+        {Text: n.link},
       }
     table.Body.Cells = append(table.Body.Cells, r)
     case false:
       r := []*simpletable.Cell{
         {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
         {Text: n.name},
-        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%s%t%s",red, n.live, reset)},
+        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sOffline%s",red , reset)},
+        {Text: n.link},
       }
     table.Body.Cells = append(table.Body.Cells, r)
     default:
