@@ -83,6 +83,7 @@ func checkStreamers() (streams []stream) {
   }
   clearTerm()
   pPrint(results)
+  fmt.Println()
 
   return nil
 }
