@@ -1,0 +1,25 @@
+# Maintainer: n00bady <kaz00@vivaldi.net>
+
+pkgname=ttvchecker
+pkgver=0.0.1
+pkgrel=1
+pkgdesc="A cli tool to check if your favorite twitch streamers are online."
+arch=('x86_64')
+url="https://gitlab.com/n00bady/ttvchecker"
+license=('GPL3')
+conflicts=("$pkgname")
+makedepends=(`go`)
+source=("${url}/-/archive/${pkgver}/${pkgname}-${pkgver}.tar.gz")
+sha512sums=('c78f73537118266394bad1b66f71e7840d0b48ae12e6ca369f1a662981a8090e693dbb95c1b38d54899d4aa1c354f5b3d065574964480b8bc781389ca3d722f9')
+
+build() {
+  cd ${pkgname}-${pkgver}
+  go build
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname"
+  install -Dm755 $pkgname "$pkgdir/usr/bin/$pkgname"
+}
+
