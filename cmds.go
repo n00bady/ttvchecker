@@ -52,7 +52,7 @@ func checkStreamers() (streams []stream) {
   fScanner.Split(bufio.ScanLines)
   for fScanner.Scan() {
     streamer := fScanner.Text()
-    fmt.Println("Checking ", streamer, "...")
+    fmt.Println("Checking ", yellow+streamer+reset, "...")
     // create the request add a user agent and get a response
     req, err := http.NewRequest("GET", url+streamer, nil)
     if err != nil {
@@ -81,6 +81,7 @@ func checkStreamers() (streams []stream) {
     // add a delay between each request so we won't get banned :S
     time.Sleep(3 * time.Second)
   }
+  clearTerm()
   pPrint(results)
 
   return nil
@@ -195,4 +196,18 @@ func checkFileExist(path string) bool {
   }
 
   return true
+}
+
+// clears the terminal after it check if output is a terminal
+func clearTerm() {
+
+  o, err := os.Stdout.Stat()
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  if (o.Mode() & os.ModeCharDevice) == os.ModeCharDevice {
+
+    fmt.Println("\033[2J\033[1;1H")
+  }
 }
