@@ -23,14 +23,27 @@ type stream struct {
 // and prints a table with that state
 func checkStreamers() (streams []stream) {
 
-  list := createStreamerlist()
-  f, err := os.OpenFile(list, os.O_RDONLY, 644)
+  streamerlist := createStreamerlist()
+  f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
   if err != nil {
     fmt.Println(err)
     os.Exit(1)
   }
   defer f.Close()
 
+  // check if the file is empty there is no point to continue
+  // if there are no streamer in the file
+  fi, err := f.Stat()
+  if err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+  }
+  if fi.Size() == 0 {
+    fmt.Println("The "+streamerlist+" is empty!")
+    os.Exit(1)
+  }
+
+  // take each line by the file and make a get http request
   var results []stream
   fScanner := bufio.NewScanner(f)
   fScanner.Split(bufio.ScanLines)
@@ -56,7 +69,7 @@ func checkStreamers() (streams []stream) {
     results = append(results, stream{name: streamer, live: isLive})
 
     // add a delay between each request so we won't get banned :S
-    time.Sleep(5 * time.Second)
+    time.Sleep(3 * time.Second)
   }
   pPrint(results)
 
@@ -66,9 +79,9 @@ func checkStreamers() (streams []stream) {
 // Adds a streamer to the config file
 func addStreamer(name string) {
 
-  list := createStreamerlist()
+  streamerlist := createStreamerlist()
   
-  f, err := os.OpenFile(list, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+  f, err := os.OpenFile(streamerlist, os.O_APPEND|os.O_WRONLY, os.ModePerm)
   if err != nil {
     fmt.Println(err)
     os.Exit(1)
@@ -87,9 +100,9 @@ func addStreamer(name string) {
 func delStreamer(name string) {
 
   var tmp []string
-  list := createStreamerlist()
+  streamerlist := createStreamerlist()
 
-  f, err := os.OpenFile(list, os.O_RDWR, 0644)
+  f, err := os.OpenFile(streamerlist, os.O_RDWR, 0644)
   if err != nil {
     fmt.Println(err)
     os.Exit(1)
@@ -106,7 +119,7 @@ func delStreamer(name string) {
     }
   }
   f.Seek(0, io.SeekStart)
-  if err := os.Truncate(list, 0); err != nil {
+  if err := os.Truncate(streamerlist, 0); err != nil {
     fmt.Println(err)
     os.Exit(1)
   }
@@ -125,16 +138,10 @@ func delStreamer(name string) {
 
 func createStreamerlist() string {
 
-  // get home directory
-  homeDir, err := os.UserHomeDir()
-  if err != nil {
-    fmt.Println(err)
-  }
+  configPath := constructConfigPath()
 
-  configPath := filepath.Join(homeDir, ".config", "ttvchecker")
-
-  // check if it exists
-  if _, err := os.Stat(configPath); errors.Is(err, os.ErrNotExist) {
+  // if the config folder doesn't exits then create it and the streamerlist.txt
+  if !checkFileExist(configPath) {
     err := os.Mkdir(configPath, os.ModePerm)
     if err != nil {
       fmt.Println(err)
@@ -148,5 +155,34 @@ func createStreamerlist() string {
     f.Close()
   }
 
+  // if the config folder does exist but the streamerlist.txt does not then create it
+  if !checkFileExist(configPath+"/streamerlist.txt") {
+    _, err := os.Create(configPath+"/streamerlist.txt")
+    if err != nil {
+      fmt.Println(err)
+      os.Exit(1)
+    }
+  }
+
   return configPath+"/streamerlist.txt"
+}
+
+func constructConfigPath() string {
+
+  homeDir, err := os.UserHomeDir()
+  if err != nil {
+    fmt.Println(err)
+    os.Exit(1)
+  }
+
+  return filepath.Join(homeDir, ".config", "ttvchecker")
+}
+
+func checkFileExist(path string) bool {
+
+  if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+    return false
+  }
+
+  return true
 }
