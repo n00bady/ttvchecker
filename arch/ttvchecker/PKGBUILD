@@ -10,7 +10,7 @@ license=('GPL3')
 conflicts=("$pkgname")
 makedepends=(`go`)
 source=("${url}/-/archive/${pkgver}/${pkgname}-${pkgver}.tar.gz")
-sha512sums=('c78f73537118266394bad1b66f71e7840d0b48ae12e6ca369f1a662981a8090e693dbb95c1b38d54899d4aa1c354f5b3d065574964480b8bc781389ca3d722f9')
+sha512sums=('61902f934eeb173bf3e6150e30cc0e826c79fd6c692397b06f07e62d28f07cd67e2b0f830d3f2d71f82fb05f6f925b2f397c2c19248ccc93e5b190e7246633a5')
 
 build() {
   cd ${pkgname}-${pkgver}
