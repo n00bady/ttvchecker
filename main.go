@@ -45,7 +45,7 @@ func HandleAdd(addCmd *flag.FlagSet) {
     os.Exit(1)
   }
 
-  addStreamer(os.Args[2])
+  addStreamer(os.Args[2:])
 }
 
 func HandleDel(delCmd *flag.FlagSet) {
@@ -55,5 +55,5 @@ func HandleDel(delCmd *flag.FlagSet) {
     os.Exit(1)
   }
 
-  delStreamer(os.Args[2])
+  delStreamer(os.Args[2:])
 }

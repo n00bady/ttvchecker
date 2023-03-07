@@ -79,7 +79,7 @@ func checkStreamers() (streams []stream) {
 }
 
 // Adds a streamer to the config file
-func addStreamer(name string) {
+func addStreamer(name []string) {
 
   streamerlist := createStreamerlist()
   
@@ -90,16 +90,18 @@ func addStreamer(name string) {
   }
   defer f.Close()
 
-  if _, err := f.WriteString(name+"\n"); err != nil {
-    fmt.Println(err)
-    os.Exit(1)
+  for _, n := range name {
+    if _, err := f.WriteString(n+"\n"); err != nil {
+      fmt.Println(err)
+      os.Exit(1)
+    }
   }
-
   fmt.Println(name, " added.")
+
 }
 
 // Deletes a streamer from the config file
-func delStreamer(name string) {
+func delStreamer(name []string) {
 
   var tmp []string
   streamerlist := createStreamerlist()
@@ -116,15 +118,17 @@ func delStreamer(name string) {
   fScanner.Split(bufio.ScanLines)
   for fScanner.Scan() {
     line := fScanner.Text()
-    if name != line {
-      tmp = append(tmp, fScanner.Text()) 
+    if !contains(name, line) {
+      tmp = append(tmp, fScanner.Text())
     }
   }
+
   f.Seek(0, io.SeekStart)
   if err := os.Truncate(streamerlist, 0); err != nil {
     fmt.Println(err)
     os.Exit(1)
   }
+
   buf := bufio.NewWriter(f)
   for _, v := range tmp {
     _, err := buf.WriteString(v + "\n")
@@ -222,4 +226,16 @@ func getResponse(link string) (*http.Response, error) {
   }
 
   return resp, nil
+}
+
+// checks if a slice contains a value
+func contains(str []string, v string) bool {
+
+  for _, s := range str {
+    if v == s {
+      return true
+    }
+  }
+
+  return false
 }
