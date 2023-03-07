@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -45,41 +46,30 @@ func checkStreamers() (streams []stream) {
     os.Exit(1)
   }
 
-  // take each line by the file and make a get http request
+  // take each line in the file and make a GET http request
+  // then parse the response and figure out if the stream is live or not.
   var results []stream
-  client := &http.Client{}
   fScanner := bufio.NewScanner(f)
   fScanner.Split(bufio.ScanLines)
   for fScanner.Scan() {
     streamer := fScanner.Text()
     fmt.Println("Checking ", yellow+streamer+reset, "...")
-    // create the request add a user agent and get a response
-    req, err := http.NewRequest("GET", url+streamer, nil)
-    if err != nil {
-      fmt.Println(err)
-    }
-    req.Header.Set("User-Agent", userAgent)
-    resp, err := client.Do(req)
-    if err != nil {
-      fmt.Println(err)
-      os.Exit(1)
-    }
-    defer resp.Body.Close()
 
-    if resp.StatusCode != http.StatusOK {
-      fmt.Println("Response Status Code: ", resp.StatusCode)
-      os.Exit(1)
+    resp, err := getResponse(url+streamer)
+    if err != nil {
+      fmt.Println(err)
     }
 
     isLive, err := parse(resp)
     if err != nil {
       fmt.Println(err)
-      os.Exit(1)
     }
+    defer resp.Body.Close()
+    
     results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
 
     // add a delay between each request so we won't get banned :S
-    time.Sleep(3 * time.Second)
+    time.Sleep(1 * time.Second)
   }
   clearTerm()
   pPrint(results)
@@ -211,4 +201,25 @@ func clearTerm() {
 
     fmt.Println("\033[2J\033[1;1H")
   }
+}
+
+func getResponse(link string) (*http.Response, error) {
+  
+  client := &http.Client{}
+
+  req, err := http.NewRequest("GET", link, nil)
+  if err != nil {
+    return nil, err
+  }
+
+  req.Header.Set("User-Agent", userAgent)
+  resp, err := client.Do(req)
+  if err != nil {
+    return nil, err
+  }
+  if resp.StatusCode != http.StatusOK {
+    return nil, errors.New("Response Status Code: "+ strconv.Itoa(resp.StatusCode))
+  }
+
+  return resp, nil
 }
