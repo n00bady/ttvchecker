@@ -7,53 +7,75 @@ import (
 )
 
 func main() {
+  // Make my own usage message
+  usgmsg := 
+  "Commands:\n" +
+  "\t check \tCheck if the streams are online.\n" +
+  "\t add   \tAdd one or more streamers in the list.\n" +
+  "\t del   \tDelete one or more streamers from the list.\n"
 
+  // Initialize subcommands and possibly their options in the future(?)
   checkCmd := flag.NewFlagSet("check", flag.ExitOnError)
 
   addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 
   delCmd := flag.NewFlagSet("delete", flag.ExitOnError)
 
+  // Customize flag.Usage() with our own message
+  flag.Usage = func() {
+    fmt.Fprintf(os.Stderr, "Usage: %s [command] [args]\n\n", os.Args[0])
+    fmt.Fprintf(os.Stderr, usgmsg)
+  }
 
-  if len(os.Args) < 2 {
-    // print help
-    fmt.Println("Not enough arguments!")
+  // parse global options (they do not exists... yet)
+  flag.Parse()
+  subcmd := flag.Args()
+  if len(subcmd) == 0 {
+    flag.Usage()
     os.Exit(1)
   }
 
-  switch os.Args[1] {
+  switch subcmd[0] {
   case "check":
     HandleCheck(checkCmd)
   case "add":
-    HandleAdd(addCmd)
+    HandleAdd(addCmd, subcmd[1:])
   case "del":
-    HandleDel(delCmd)
+    HandleDel(delCmd, subcmd[1:])
   default:
-    fmt.Println("Wrong Command!")
+    flag.Usage()
     os.Exit(1)
   }
 }
 
 func HandleCheck(checkCmd *flag.FlagSet) {
+
   checkStreamers()
 }
 
-func HandleAdd(addCmd *flag.FlagSet) {
+func HandleAdd(addCmd *flag.FlagSet, args []string) {
 
-  if len(os.Args) < 3 {
-    fmt.Println("The streamer name is needed!")
+  // parse subcommand options (they do not exist... yet)
+  addCmd.Parse(args)
+  names := addCmd.Args()
+  if len(names) == 0 {
+    flag.Usage()
     os.Exit(1)
   }
 
-  addStreamer(os.Args[2:])
+  addStreamer(names)
 }
 
-func HandleDel(delCmd *flag.FlagSet) {
+func HandleDel(delCmd *flag.FlagSet, args []string) {
 
-  if len(os.Args) < 3 {
-    fmt.Println("The streamer name is needed!")
+  // parse subcommand options (they do not exist... yet)
+  delCmd.Parse(args)
+  names := delCmd.Args()
+  if len(names) == 0 {
+    flag.Usage()
     os.Exit(1)
   }
 
-  delStreamer(os.Args[2:])
+  delStreamer(names)
 }
+
