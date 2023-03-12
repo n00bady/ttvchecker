@@ -78,7 +78,7 @@ func clearTerm() {
 
   if (o.Mode() & os.ModeCharDevice) == os.ModeCharDevice {
 
-    fmt.Println("\033[2J\033[1;1H")
+    fmt.Printf("\033[2J\033[1;1H")
   }
 }
 
