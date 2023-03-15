@@ -1,0 +1,12 @@
+# Template file for 'ttvchecker'
+pkgname=ttvchecker
+version=0.1.1
+revision=1
+build_style=go
+go_import_path=ttvchecker
+short_desc="A cli tool to check if your favority twitch streamers are online written in GO."
+maintainer="n00bady <kaz00@vivaldi.net>"
+license="GPL-3.0-or-later"
+homepage="https://gitlab.com/n00bady/ttvchecker"
+distfiles="https://gitlab.com/n00bady/ttvchecker/-/archive/0.1.1/ttvchecker-0.1.1.tar.gz"
+checksum=6a09041dd5643782509b4c40b9fb95687aa86fc6242ce6ec58326cc356eb9748
