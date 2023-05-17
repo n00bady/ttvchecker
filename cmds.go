@@ -53,17 +53,22 @@ func checkStreamers() (streams []stream) {
 
     resp, err := getResponse(url+streamer)
     if err != nil {
-      fmt.Println(err)
+      fmt.Println(err) 
     }
 
-    isLive, err := parse(resp)
-    if err != nil {
-      fmt.Println(err)
-    }
-    defer resp.Body.Close()
-    
-    results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
+    if resp != nil {
+      isLive, err := parse(resp)
+      if err != nil {
+        fmt.Println(err)
+      }
+      defer resp.Body.Close()
+      
+      results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
+    } else {
 
+      results = append(results, stream{name: streamer, live: false, link: url+streamer})
+    }
+   
     // add a delay between each request so we won't get banned :S
     time.Sleep(1 * time.Second)
   }
