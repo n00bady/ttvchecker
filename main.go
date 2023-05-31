@@ -16,6 +16,7 @@ func main() {
 
   // Initialize subcommands and possibly their options in the future(?)
   checkCmd := flag.NewFlagSet("check", flag.ExitOnError)
+  onlyLives := checkCmd.Bool("l", false, "Show only streams that are currently live.")
 
   addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 
@@ -35,9 +36,11 @@ func main() {
     os.Exit(1)
   }
 
+  fmt.Println(subcmd)
   switch subcmd[0] {
   case "check":
-    HandleCheck(checkCmd)
+    checkCmd.Parse(os.Args[2:])
+    HandleCheck(checkCmd, *onlyLives)
   case "add":
     HandleAdd(addCmd, subcmd[1:])
   case "del":
@@ -48,9 +51,9 @@ func main() {
   }
 }
 
-func HandleCheck(checkCmd *flag.FlagSet) {
+func HandleCheck(checkCmd *flag.FlagSet, onlyLives bool) {
 
-  checkStreamers()
+  checkStreamers(onlyLives)
 }
 
 func HandleAdd(addCmd *flag.FlagSet, args []string) {

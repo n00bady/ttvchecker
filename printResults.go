@@ -47,7 +47,7 @@ func pPrint(s []stream) error {
         {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sLive!%s",green, reset)},
         {Text: n.link},
       }
-    table.Body.Cells = append(table.Body.Cells, r)
+      table.Body.Cells = append(table.Body.Cells, r)
     case false:
       r := []*simpletable.Cell{
         {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
@@ -55,7 +55,7 @@ func pPrint(s []stream) error {
         {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sOffline%s",red , reset)},
         {Text: n.link},
       }
-    table.Body.Cells = append(table.Body.Cells, r)
+      table.Body.Cells = append(table.Body.Cells, r)
     default:
       return errors.New("Unexpected error on reading the bool from stream struct.")
     }

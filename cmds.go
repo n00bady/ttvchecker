@@ -20,7 +20,7 @@ type stream struct {
 
 // Checks the state of all the streamers on the config file
 // and prints a table with that state
-func checkStreamers() (streams []stream) {
+func checkStreamers(onlyLives bool) (streams []stream) {
 
   streamerlist := createStreamerlist()
   f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
@@ -63,12 +63,15 @@ func checkStreamers() (streams []stream) {
       }
       defer resp.Body.Close()
       
-      results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
+      if onlyLives && isLive {
+        results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
+      } else if !onlyLives {
+        results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
+      }
     } else {
 
       results = append(results, stream{name: streamer, live: false, link: url+streamer})
-    }
-   
+    } 
     // add a delay between each request so we won't get banned :S
     time.Sleep(1 * time.Second)
   }
