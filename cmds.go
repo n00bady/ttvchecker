@@ -20,7 +20,7 @@ type stream struct {
 
 // Checks the state of all the streamers on the config file
 // and prints a table with that state
-func checkStreamers(onlyLives bool) (streams []stream) {
+func checkStreamers(onlyLives bool, formatCSV bool) (streams []stream) {
 
   streamerlist := createStreamerlist()
   f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
@@ -63,18 +63,30 @@ func checkStreamers(onlyLives bool) (streams []stream) {
       }
       defer resp.Body.Close()
       
+      // check if the onlyLives option is enabled and add only the 
+      // streams that are live on the results if it is
       if onlyLives && isLive {
         results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
       } else if !onlyLives {
         results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
       }
     } else {
-
+      // show the stream as offline if the response is not what you expect
       results = append(results, stream{name: streamer, live: false, link: url+streamer})
     } 
     // add a delay between each request so we won't get banned :S
     time.Sleep(1 * time.Second)
   }
+  
+  // print the results in a csv format if the the option is enabled
+  if formatCSV {
+    clearTerm()
+    csvPrint(results)
+
+    return nil
+  }
+
+  // print the results as a table in stdout
   clearTerm()
   pPrint(results)
   fmt.Println()

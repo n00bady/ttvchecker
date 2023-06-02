@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
+	"os"
+	"reflect"
 
 	"github.com/alexeyco/simpletable"
 )
@@ -63,6 +66,30 @@ func pPrint(s []stream) error {
 
   table.SetStyle(simpletable.StyleCompactLite)
   fmt.Println(table.String())
+
+  return nil
+}
+
+func csvPrint(s []stream) error {
+  stream_string := make([][]string, len(s))
+
+  for l, stream := range s {
+    values := reflect.ValueOf(stream)
+    for i:=0; i<values.NumField(); i++ {
+
+      switch values.Field(i).Kind() {
+      case reflect.Bool:
+        // i could not find another way to print true/false instead of <bool value> except this
+        stream_string[l] = append(stream_string[l], fmt.Sprintf("%v", values.Field(i).Bool()))
+      default:
+        stream_string[l] = append(stream_string[l], values.Field(i).String()) 
+      }
+    }
+  }
+
+  output := csv.NewWriter(os.Stdout)
+  output.WriteAll(stream_string)
+  output.Flush()
 
   return nil
 }

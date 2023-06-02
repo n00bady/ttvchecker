@@ -17,6 +17,7 @@ func main() {
   // Initialize subcommands and possibly their options in the future(?)
   checkCmd := flag.NewFlagSet("check", flag.ExitOnError)
   onlyLives := checkCmd.Bool("l", false, "Show only streams that are currently live.")
+  formatCSV := checkCmd.Bool("csv", false, "Return the results in a comma seperated format.")
 
   addCmd := flag.NewFlagSet("add", flag.ExitOnError)
 
@@ -36,11 +37,10 @@ func main() {
     os.Exit(1)
   }
 
-  fmt.Println(subcmd)
   switch subcmd[0] {
   case "check":
     checkCmd.Parse(os.Args[2:])
-    HandleCheck(checkCmd, *onlyLives)
+    HandleCheck(checkCmd, *onlyLives, *formatCSV)
   case "add":
     HandleAdd(addCmd, subcmd[1:])
   case "del":
@@ -51,9 +51,9 @@ func main() {
   }
 }
 
-func HandleCheck(checkCmd *flag.FlagSet, onlyLives bool) {
+func HandleCheck(checkCmd *flag.FlagSet, onlyLives bool, formatCSV bool) {
 
-  checkStreamers(onlyLives)
+  checkStreamers(onlyLives, formatCSV)
 }
 
 func HandleAdd(addCmd *flag.FlagSet, args []string) {
