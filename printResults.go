@@ -1,13 +1,13 @@
 package main
 
 import (
-	"encoding/csv"
-	"errors"
-	"fmt"
-	"os"
-	"reflect"
+    "encoding/csv"
+    "errors"
+    "fmt"
+    "os"
+    "reflect"
 
-	"github.com/alexeyco/simpletable"
+    "github.com/alexeyco/simpletable"
 )
 
 // colors
@@ -26,70 +26,70 @@ var white  = "\033[97m"
 // returns an error or nil if no errors
 func pPrint(s []stream) error {
 
-  if len(s) == 0 {
-    return errors.New("Input slice is empty!")
-  }
-
-  table := simpletable.New()
-
-  table.Header = &simpletable.Header{
-    Cells: []*simpletable.Cell{
-      {Align: simpletable.AlignLeft, Text: "#"},
-      {Align: simpletable.AlignLeft, Text: "Streamer"},
-      {Align: simpletable.AlignLeft, Text: "Live?"},
-      {Align: simpletable.AlignLeft, Text: "URL"},
-    },
-  }
-
-  for i, n := range s {
-    switch n.live {
-    case true:
-      r := []*simpletable.Cell{
-        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
-        {Text: n.name},
-        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sLive!%s",green, reset)},
-        {Text: n.link},
-      }
-      table.Body.Cells = append(table.Body.Cells, r)
-    case false:
-      r := []*simpletable.Cell{
-        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
-        {Text: n.name},
-        {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sOffline%s",red , reset)},
-        {Text: n.link},
-      }
-      table.Body.Cells = append(table.Body.Cells, r)
-    default:
-      return errors.New("Unexpected error on reading the bool from stream struct.")
+    if len(s) == 0 {
+        return errors.New("Input slice is empty!")
     }
-  }
 
-  table.SetStyle(simpletable.StyleCompactLite)
-  fmt.Println(table.String())
+    table := simpletable.New()
 
-  return nil
+    table.Header = &simpletable.Header{
+        Cells: []*simpletable.Cell{
+            {Align: simpletable.AlignLeft, Text: "#"},
+            {Align: simpletable.AlignLeft, Text: "Streamer"},
+            {Align: simpletable.AlignLeft, Text: "Live?"},
+            {Align: simpletable.AlignLeft, Text: "URL"},
+        },
+    }
+
+    for i, n := range s {
+        switch n.live {
+        case true:
+            r := []*simpletable.Cell{
+                {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
+                {Text: n.name},
+                {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sLive!%s",green, reset)},
+                {Text: n.link},
+            }
+            table.Body.Cells = append(table.Body.Cells, r)
+        case false:
+            r := []*simpletable.Cell{
+                {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
+                {Text: n.name},
+                {Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sOffline%s",red , reset)},
+                {Text: n.link},
+            }
+            table.Body.Cells = append(table.Body.Cells, r)
+        default:
+            return errors.New("Unexpected error on reading the bool from stream struct.")
+        }
+    }
+
+    table.SetStyle(simpletable.StyleCompactLite)
+    fmt.Println(table.String())
+
+    return nil
 }
 
 func csvPrint(s []stream) error {
-  stream_string := make([][]string, len(s))
+    stream_string := make([][]string, len(s))
 
-  for l, stream := range s {
-    values := reflect.ValueOf(stream)
-    for i:=0; i<values.NumField(); i++ {
+    for l, stream := range s {
+        values := reflect.ValueOf(stream)
+        for i:=0; i<values.NumField(); i++ {
 
-      switch values.Field(i).Kind() {
-      case reflect.Bool:
-        // i could not find another way to print true/false instead of <bool value> except this
-        stream_string[l] = append(stream_string[l], fmt.Sprintf("%v", values.Field(i).Bool()))
-      default:
-        stream_string[l] = append(stream_string[l], values.Field(i).String()) 
-      }
+            switch values.Field(i).Kind() {
+            case reflect.Bool:
+                // i could not find another way to print true/false instead of <bool value> except this
+                stream_string[l] = append(stream_string[l], fmt.Sprintf("%v", values.Field(i).Bool()))
+            default:
+                stream_string[l] = append(stream_string[l], values.Field(i).String()) 
+            }
+        }
     }
-  }
 
-  output := csv.NewWriter(os.Stdout)
-  output.WriteAll(stream_string)
-  output.Flush()
+    output := csv.NewWriter(os.Stdout)
+    output.WriteAll(stream_string)
+    output.Flush()
 
-  return nil
+    return nil
 }
