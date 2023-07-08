@@ -38,17 +38,17 @@ func main() {
     }
 
     switch subcmd[0] {
-        case "check":
-            checkCmd.Parse(os.Args[2:])
-            HandleCheck(checkCmd, *onlyLives, *formatCSV)
-        case "add":
-            HandleAdd(addCmd, subcmd[1:])
-        case "del":
-            HandleDel(delCmd, subcmd[1:])
-        default:
-            flag.Usage()
-            os.Exit(1)
-}
+    case "check":
+        checkCmd.Parse(os.Args[2:])
+        HandleCheck(checkCmd, *onlyLives, *formatCSV)
+    case "add":
+        HandleAdd(addCmd, subcmd[1:])
+    case "del":
+        HandleDel(delCmd, subcmd[1:])
+    default:
+        flag.Usage()
+        os.Exit(1)
+    }
 }
 
 func HandleCheck(checkCmd *flag.FlagSet, onlyLives bool, formatCSV bool) {
