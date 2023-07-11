@@ -23,6 +23,8 @@ func main() {
 
     delCmd := flag.NewFlagSet("delete", flag.ExitOnError)
 
+    tuiCmd := flag.NewFlagSet("tui", flag.ExitOnError)
+
     // Customize flag.Usage() with our own message
     flag.Usage = func() {
         fmt.Fprintf(os.Stderr, "Usage: %s [command] [args]\n\n", os.Args[0])
@@ -45,6 +47,8 @@ func main() {
         HandleAdd(addCmd, subcmd[1:])
     case "del":
         HandleDel(delCmd, subcmd[1:])
+    case "tui":
+        HandleTui(tuiCmd)
     default:
         flag.Usage()
         os.Exit(1)
@@ -82,3 +86,10 @@ func HandleDel(delCmd *flag.FlagSet, args []string) {
     delStreamer(names)
 }
 
+func HandleTui(tuiCmd *flag.FlagSet) {
+    err := startTUI()
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+}
