@@ -48,7 +48,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-    return baseStyle.Render(m.table.View()) + "\n"
+    return baseStyle.Render(m.table.View()) + "\n" + dark_gray + "j-down k-up enter-select q-quit" + reset + "\n"
 }
 
 // This is the "main"

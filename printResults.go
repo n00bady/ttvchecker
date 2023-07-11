@@ -19,6 +19,7 @@ var blue   = "\033[34m"
 var purple = "\033[35m"
 var cyan   = "\033[36m"
 var gray   = "\033[37m"
+var dark_gray ="\x1b[38;5;236m"
 var white  = "\033[97m"
 
 // gives color to output and prints the results
