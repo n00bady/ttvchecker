@@ -49,20 +49,27 @@ func (m model) View() string {
 
 // This is the main
 func startTUI() error {
+    // construct the collumns and header titles
     columns := []table.Column{
         {Title: "#", Width: 3},
-        {Title: "Streamer", Width: 18},
-        {Title: "Live?", Width: 7},
-        {Title: "URL", Width: 22+18},
+        {Title: "Streamer", Width: 22},
+        {Title: "Live?", Width: 8},
+        {Title: "URL", Width: 22+22},
     }
 
     rows := updateStreamers()
+    var tHeight int // max height of the table
+    if len(rows) >= 15 {
+        tHeight = 15
+    } else {
+        tHeight = len(rows)
+    }
 
     t := table.New(
         table.WithColumns(columns),
         table.WithRows(rows),
         table.WithFocused(true),
-        table.WithHeight(10),
+        table.WithHeight(tHeight),
     )
 
     s := table.DefaultStyles()
@@ -70,13 +77,14 @@ func startTUI() error {
         BorderStyle(lipgloss.NormalBorder()).
         BorderForeground(lipgloss.Color("240")).
         BorderBottom(true).
-        Bold(false)
+        Bold(true)
     s.Selected = s.Selected.
         Foreground(lipgloss.Color("229")).
         Background(lipgloss.Color("57")).
-        Bold(false)
+        Bold(true)
     t.SetStyles(s)
 
+    // run the model
     m := model{t}
     if _, err := tea.NewProgram(m).Run(); err != nil {
         return err
@@ -132,7 +140,11 @@ func updateStreamers() (rows []table.Row) {
     }
     
     for i, st := range results {
-        rows = append(rows, table.Row{strconv.Itoa(i), st.name, strconv.FormatBool(st.live), st.link })
+        if st.live {
+            rows = append(rows, table.Row{strconv.Itoa(i), st.name, "LIVE", st.link })
+        } else {
+            rows = append(rows, table.Row{strconv.Itoa(i), st.name, "OFFLINE", st.link })
+        }
     }
 
     clearTerm()
