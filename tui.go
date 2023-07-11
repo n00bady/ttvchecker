@@ -17,10 +17,14 @@ var baseStyle = lipgloss.NewStyle().
     BorderStyle(lipgloss.NormalBorder()).
     BorderForeground(lipgloss.Color("240"))
 
+// Our model it's only a stantard table model
+// from the bubbles lib
 type model struct {
     table table.Model
 }
 
+// Maybe I should initialize the table here ?
+// But the example doesn't do that...
 func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -28,12 +32,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
     case tea.KeyMsg:
         switch msg.String() {
-        case "f5":
+        case "f5":              // refresh the table
             m.table.SetRows(updateStreamers())
             return m, tea.Printf("Refreshed!")
-        case "q", "ctrl+c":
+        case "q", "ctrl+c":     // quit
             return m, tea.Quit 
-        case "enter":
+        case "enter":           // select and open to default browser TODO: make it OS agnostic ?
             err := exec.Command("xdg-open", m.table.SelectedRow()[3]).Start()
             if err != nil { return m, tea.Println(err) }
             return m, tea.Printf("You selected %s", m.table.SelectedRow()[1])
@@ -47,9 +51,9 @@ func (m model) View() string {
     return baseStyle.Render(m.table.View()) + "\n"
 }
 
-// This is the main
+// This is the "main"
 func startTUI() error {
-    // construct the collumns and header titles
+    // create the collumns and header titles
     columns := []table.Column{
         {Title: "#", Width: 3},
         {Title: "Streamer", Width: 22},
@@ -57,6 +61,7 @@ func startTUI() error {
         {Title: "URL", Width: 22+22},
     }
 
+    // create the rows
     rows := updateStreamers()
     var tHeight int // max height of the table
     if len(rows) >= 15 {
@@ -65,6 +70,7 @@ func startTUI() error {
         tHeight = len(rows)
     }
 
+    // Create the initial table
     t := table.New(
         table.WithColumns(columns),
         table.WithRows(rows),
@@ -72,6 +78,7 @@ func startTUI() error {
         table.WithHeight(tHeight),
     )
 
+    // initialize a default style and then modify it
     s := table.DefaultStyles()
     s.Header = s.Header.
         BorderStyle(lipgloss.NormalBorder()).
@@ -95,6 +102,7 @@ func startTUI() error {
 
 func updateStreamers() (rows []table.Row) { 
     streamerlist := createStreamerlist()
+    // --- These should probably go to a helper function ? ----
     f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
     if err != nil {
         fmt.Println(err)
@@ -113,12 +121,16 @@ func updateStreamers() (rows []table.Row) {
         fmt.Println("The "+streamerlist+" is empty!")
         os.Exit(1)
     }
+    // --------------------------------------------------------
 
-    var results []stream
     fScanner := bufio.NewScanner(f)
     fScanner.Split(bufio.ScanLines)
+    i := 0
     for fScanner.Scan() {
         streamer := fScanner.Text()
+        // probably I should use bubbletea to print those
+        // but it works fine like that so I will leave it 
+        // until it bites my ass
         fmt.Println("Checking ", yellow+streamer+reset, "...")
 
         resp, err := getResponse(url+streamer)
@@ -133,20 +145,16 @@ func updateStreamers() (rows []table.Row) {
             }
             defer resp.Body.Close()
 
-            results = append(results, stream{name: streamer, live: isLive, link: url+streamer})
+            if isLive {
+                rows = append(rows, table.Row{strconv.Itoa(i), streamer, "LIVE", url+streamer})
+            } else {
+                rows = append(rows, table.Row{strconv.Itoa(i), streamer, "OFFLINE", url+streamer})
+            }
         }
         // add a delay between each request so we won't get banned :S
+        i++
         time.Sleep(1 * time.Second)
-    }
-    
-    for i, st := range results {
-        if st.live {
-            rows = append(rows, table.Row{strconv.Itoa(i), st.name, "LIVE", st.link })
-        } else {
-            rows = append(rows, table.Row{strconv.Itoa(i), st.name, "OFFLINE", st.link })
-        }
-    }
-
+    } 
     clearTerm()
 
     return rows
