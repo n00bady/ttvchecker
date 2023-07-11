@@ -29,7 +29,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case tea.KeyMsg:
         switch msg.String() {
         case "f5":
-            table.WithRows(updateStreamers()) 
+            m.table.SetRows(updateStreamers())
             return m, tea.Printf("Refreshed!")
         case "q", "ctrl+c":
             return m, tea.Quit 
