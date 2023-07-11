@@ -12,7 +12,8 @@ func main() {
     "Commands:\n" +
     "\t check \tCheck if the streams are online.\n" +
     "\t add   \tAdd one or more streamers in the list.\n" +
-    "\t del   \tDelete one or more streamers from the list.\n"
+    "\t del   \tDelete one or more streamers from the list.\n" +
+    "\t tui   \tStart the TUI!\n"
 
     // Initialize subcommands and possibly their options in the future(?)
     checkCmd := flag.NewFlagSet("check", flag.ExitOnError)
