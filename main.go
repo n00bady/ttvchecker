@@ -11,6 +11,8 @@ func main() {
     usgmsg := 
     "Commands:\n" +
     "\t check \tCheck if the streams are online.\n" +
+    "\t\t  -l \tShow only the streams that are live.\n" +
+    "\t\t --csv \tGet the output in csv format.\n\n" +
     "\t add   \tAdd one or more streamers in the list.\n" +
     "\t del   \tDelete one or more streamers from the list.\n" +
     "\t tui   \tStart the TUI!\n"
