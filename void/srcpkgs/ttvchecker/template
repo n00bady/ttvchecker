@@ -1,6 +1,6 @@
 # Template file for 'ttvchecker'
 pkgname=ttvchecker
-version=0.1.2
+version=0.2.0
 revision=1
 build_style=go
 go_import_path=ttvchecker
@@ -9,4 +9,4 @@ maintainer="n00bady <kaz00@vivaldi.net>"
 license="GPL-3.0-or-later"
 homepage="https://gitlab.com/n00bady/ttvchecker"
 distfiles="${homepage}/-/archive/${version}/${pkgname}-${version}.tar.gz"
-checksum=8e90be61f76e763ecbde67f85bf87503b76aa2c62f822f3e054ff4bf8d9a66a0
+checksum=c2bcedfa5d8916c87fe3aace84e7b979337334274fe9b8579e19827f511e237a
