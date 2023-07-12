@@ -33,6 +33,10 @@ var keys = keyMap{
             key.WithKeys("enter"),
             key.WithHelp("enter", "select"),
     ),  
+    Refresh: key.NewBinding(
+            key.WithKeys("f5"),
+            key.WithHelp("f5", "refresh"),
+    ),
     Quit: key.NewBinding(
 		    key.WithKeys("q", "ctrl+c"),
 		    key.WithHelp("q", "quit"),
@@ -43,6 +47,7 @@ type keyMap struct {
     Up      key.Binding
     Down    key.Binding
     Select  key.Binding
+    Refresh key.Binding
     Quit    key.Binding
 }
 
@@ -53,13 +58,13 @@ type model struct {
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-    return []key.Binding{k.Up, k.Down, k.Select, k.Quit}
+    return []key.Binding{k.Up, k.Down, k.Select, k.Refresh, k.Quit}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
     return [][]key.Binding{
         {k.Up, k.Down, k.Select},
-        {k.Quit},
+        {k.Refresh, k.Quit},
     }
 }
 
