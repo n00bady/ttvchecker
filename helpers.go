@@ -9,7 +9,32 @@ import (
     "strconv"
 )
 
-// creates a folder in usrers ~/.config/ called ttvchecker and 
+func openStreamerlist() *os.File {
+
+    streamerlist := createStreamerlist()
+    f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    // check if the file is empty there is no point to continue
+    // if there are no streamer in the file
+    fi, err := f.Stat()
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    if fi.Size() == 0 {
+        fmt.Println("The "+streamerlist+" is empty!")
+        os.Exit(1)
+    }
+
+    return f
+}
+
+// checks if the streamerlist.txt exists if not
+// creates a folder in users ~/.config/ called ttvchecker and 
 // creates a streamerlist.txt if they don't exist
 // returns a string with the path to it
 func createStreamerlist() string {

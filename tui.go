@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -73,6 +72,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 func (m model) Init() tea.Cmd { return nil }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
     var cmd tea.Cmd
     switch msg := msg.(type) {
     case tea.KeyMsg:
@@ -104,6 +104,7 @@ func (m model) View() string {
 
 // This is the "main"
 func startTUI() error {
+
     // create the collumns and header titles
     columns := []table.Column{
         {Title: "#", Width: 3},
@@ -160,27 +161,8 @@ func startTUI() error {
 }
 
 func updateStreamers() (rows []table.Row) { 
-    streamerlist := createStreamerlist()
-    // --- These should probably go to a helper function ? ----
-    f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    defer f.Close()
 
-    // check if the file is empty there is no point to continue
-    // if there are no streamer in the file
-    fi, err := f.Stat()
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    if fi.Size() == 0 {
-        fmt.Println("The "+streamerlist+" is empty!")
-        os.Exit(1)
-    }
-    // --------------------------------------------------------
+    f := openStreamerlist()
 
     fScanner := bufio.NewScanner(f)
     fScanner.Split(bufio.ScanLines)
@@ -214,6 +196,7 @@ func updateStreamers() (rows []table.Row) {
         i++
         time.Sleep(1 * time.Second)
     } 
+    defer f.Close()
     clearTerm()
 
     return rows

@@ -22,25 +22,7 @@ type stream struct {
 // and prints a table with that state
 func checkStreamers(onlyLives bool, formatCSV bool) (streams []stream) {
 
-    streamerlist := createStreamerlist()
-    f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    defer f.Close()
-
-    // check if the file is empty there is no point to continue
-    // if there are no streamer in the file
-    fi, err := f.Stat()
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
-    if fi.Size() == 0 {
-        fmt.Println("The "+streamerlist+" is empty!")
-        os.Exit(1)
-    }
+    f := openStreamerlist()
 
     // take each line in the file and make a GET http request
     // then parse the response and figure out if the stream is live or not.
@@ -77,6 +59,7 @@ func checkStreamers(onlyLives bool, formatCSV bool) (streams []stream) {
         // add a delay between each request so we won't get banned :S
         time.Sleep(1 * time.Second)
     }
+    defer f.Close() // don't forget to close it
 
     // print the results in a csv format if the the option is enabled
     if formatCSV {
@@ -99,12 +82,12 @@ func addStreamer(name []string) {
 
     streamerlist := createStreamerlist()
 
-f, err := os.OpenFile(streamerlist, os.O_APPEND|os.O_WRONLY, os.ModePerm)
+    f, err := os.OpenFile(streamerlist, os.O_APPEND|os.O_WRONLY, os.ModePerm)
     if err != nil {
         fmt.Println(err)
         os.Exit(1)
     }
-defer f.Close()
+    defer f.Close()
 
     for _, n := range name {
         if _, err := f.WriteString(n+"\n"); err != nil {
