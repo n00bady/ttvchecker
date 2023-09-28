@@ -126,13 +126,13 @@ func startTUI() error {
     s := table.DefaultStyles()
     s.Header = s.Header.
         BorderStyle(lipgloss.NormalBorder()).
-        Foreground(lipgloss.Color("57")).
-        BorderForeground(lipgloss.Color("51")).
+        Foreground(lipgloss.Color("#772ce7")).
+        BorderForeground(lipgloss.Color("#441194")).
         BorderBottom(true).
         Bold(true)
     s.Selected = s.Selected.
-        Foreground(lipgloss.Color("229")).
-        Background(lipgloss.Color("57")).
+        Foreground(lipgloss.Color("#000000")).
+        Background(lipgloss.Color("#5b16c5")).
         Bold(true)
 
     // Create the initial table
