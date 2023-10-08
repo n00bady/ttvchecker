@@ -130,7 +130,7 @@ func startTUI() error {
 		BorderBottom(true).
 		Bold(true)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("#000000")).
+		Foreground(lipgloss.Color("#ffffff")).
 		Background(lipgloss.Color("#5b16c5")).
 		Bold(true)
 
