@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 func openStreamerlist() *os.File {
@@ -104,7 +105,7 @@ func clearTerm() {
 
 // create a GET request and return the response and an error/nil
 func getResponse(link string) (*http.Response, error) {
-	client := &http.Client{}
+	client := &http.Client{Timeout: 5 * time.Second}
 
 	req, err := http.NewRequest("GET", link, nil)
 	if err != nil {
