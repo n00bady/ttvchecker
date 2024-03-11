@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,7 +14,7 @@ func openStreamerlist() *os.File {
 	streamerlist := createStreamerlist()
 	f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 
@@ -21,7 +22,7 @@ func openStreamerlist() *os.File {
 	// if there are no streamer in the file
 	fi, err := f.Stat()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	if fi.Size() == 0 {
@@ -43,12 +44,12 @@ func createStreamerlist() string {
 	if !checkFileExist(configPath) {
 		err := os.Mkdir(configPath, os.ModePerm)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
 		f, err := os.Create(configPath + "/streamerlist.txt")
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
 		f.Close()
@@ -58,7 +59,7 @@ func createStreamerlist() string {
 	if !checkFileExist(configPath + "/streamerlist.txt") {
 		_, err := os.Create(configPath + "/streamerlist.txt")
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
 	}
@@ -72,7 +73,7 @@ func createStreamerlist() string {
 func constructConfigPath() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 
@@ -93,7 +94,7 @@ func checkFileExist(path string) bool {
 func clearTerm() {
 	o, err := os.Stdout.Stat()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	if (o.Mode() & os.ModeCharDevice) == os.ModeCharDevice {

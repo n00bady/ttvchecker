@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -174,13 +175,13 @@ func updateStreamers() (rows []table.Row) {
 
 		resp, err := getResponse(url + streamer)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		if resp != nil {
 			isLive, err := parse(resp)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 			defer resp.Body.Close()
 

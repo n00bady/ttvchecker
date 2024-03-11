@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -88,7 +89,7 @@ func HandleDel(delCmd *flag.FlagSet, args []string) {
 func HandleTui(tuiCmd *flag.FlagSet) {
 	err := startTUI()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"time"
 )
@@ -36,13 +37,13 @@ func checkStreamers(onlyLives bool, formatCSV bool) (streams []stream) {
 
 		resp, err := getResponse(url + streamer)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 
 		if resp != nil {
 			isLive, err := parse(resp)
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 			defer resp.Body.Close()
 
@@ -84,14 +85,14 @@ func addStreamer(name []string) {
 
 	f, err := os.OpenFile(streamerlist, os.O_APPEND|os.O_WRONLY, os.ModePerm)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	defer f.Close()
 
 	for _, n := range name {
 		if _, err := f.WriteString(n + "\n"); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
 	}
@@ -105,7 +106,7 @@ func delStreamer(name []string) {
 
 	f, err := os.OpenFile(streamerlist, os.O_RDWR, 0644)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	defer f.Close()
@@ -122,7 +123,7 @@ func delStreamer(name []string) {
 
 	f.Seek(0, io.SeekStart)
 	if err := os.Truncate(streamerlist, 0); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 
@@ -130,7 +131,7 @@ func delStreamer(name []string) {
 	for _, v := range tmp {
 		_, err := buf.WriteString(v + "\n")
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
 	}
