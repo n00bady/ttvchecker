@@ -58,7 +58,7 @@ func checkStreamers(onlyLives bool, formatCSV bool) (streams []stream) {
 			results = append(results, stream{name: streamer, live: false, link: url + streamer})
 		}
 		// add a delay between each request so we won't get banned :S
-		time.Sleep(1 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 	}
 	defer f.Close() // don't forget to close it
 

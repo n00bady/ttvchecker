@@ -192,7 +192,7 @@ func updateStreamers() (rows []table.Row) {
 		}
 		// add a delay between each request so we won't get banned :S
 		i++
-		time.Sleep(1 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 	}
 	defer f.Close()
 	clearTerm()
