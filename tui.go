@@ -16,9 +16,15 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// maybe I should make updateStreamers() return the time too ???
+var t time.Time
+
 var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("55"))
+
+// Doesn't look like it wants to align to the right... brobably I am using it wrong(?)
+var timeStyle = lipgloss.NewStyle().Align(lipgloss.Position(lipgloss.Right)).Foreground(lipgloss.Color("240"))
 
 var keys = keyMap{
 	Up: key.NewBinding(
@@ -38,7 +44,7 @@ var keys = keyMap{
 		key.WithHelp("f5", "refresh"),
 	),
 	Quit: key.NewBinding(
-        key.WithKeys("ctrl+d"),
+		key.WithKeys("ctrl+d"),
 		key.WithKeys("q", "ctrl+c"),
 		key.WithHelp("q", "quit"),
 	),
@@ -71,7 +77,9 @@ func (k keyMap) FullHelp() [][]key.Binding {
 
 // Maybe I should initialize the table here ?
 // But the example doesn't do that...
-func (m model) Init() tea.Cmd { return nil }
+// Made it to clearscreen on init so I don't have to do it twice
+// when updateing the tables throught updateStreamers()
+func (m model) Init() tea.Cmd { return tea.ClearScreen }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -80,7 +88,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "f5": // refresh the table
 			m.table.SetRows(updateStreamers())
-			return m, tea.Printf("Refreshed!")
+			// Can't get rid of tea.Printf() because it breaks the table on refresh, why?!
+			// seems like forcing a ClearScreen works as a workaround.
+			return m, tea.ClearScreen
 		case "q", "ctrl+c", "ctrl+d": // quit
 			return m, tea.Quit
 		case "enter": // select and open to default browser TODO: make it OS agnostic ?
@@ -98,10 +108,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	tbl := baseStyle.Render(m.table.View())
 	hlp := m.help.View(m.keys)
+	time_str := timeStyle.Render("refreshed at: " + t.Format("15:04:05"))
 	// +4 for the outer top/bottom and header
 	height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
 
-	return tbl + strings.Repeat("\n", height) + hlp + "\n"
+	return tbl + strings.Repeat("\n", height) + time_str + "\n" + hlp + "\n"
 }
 
 // This is the "main"
@@ -164,6 +175,8 @@ func startTUI() error {
 func updateStreamers() (rows []table.Row) {
 	f := openStreamerlist()
 
+	t = time.Now()
+
 	fScanner := bufio.NewScanner(f)
 	fScanner.Split(bufio.ScanLines)
 	i := 0
@@ -197,7 +210,7 @@ func updateStreamers() (rows []table.Row) {
 		time.Sleep(500 * time.Millisecond)
 	}
 	defer f.Close()
-	clearTerm()
+	// clearTerm()
 
 	return rows
 }
