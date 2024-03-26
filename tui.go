@@ -38,6 +38,7 @@ var keys = keyMap{
 		key.WithHelp("f5", "refresh"),
 	),
 	Quit: key.NewBinding(
+        key.WithKeys("ctrl+d"),
 		key.WithKeys("q", "ctrl+c"),
 		key.WithHelp("q", "quit"),
 	),
@@ -80,7 +81,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "f5": // refresh the table
 			m.table.SetRows(updateStreamers())
 			return m, tea.Printf("Refreshed!")
-		case "q", "ctrl+c": // quit
+		case "q", "ctrl+c", "ctrl+d": // quit
 			return m, tea.Quit
 		case "enter": // select and open to default browser TODO: make it OS agnostic ?
 			err := exec.Command("xdg-open", m.table.SelectedRow()[3]).Start()
