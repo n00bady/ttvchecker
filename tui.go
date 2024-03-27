@@ -16,15 +16,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// maybe I should make updateStreamers() return the time too ???
-var t time.Time
-
 var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("55"))
 
 // Doesn't look like it wants to align to the right... brobably I am using it wrong(?)
-var timeStyle = lipgloss.NewStyle().Align(lipgloss.Position(lipgloss.Right)).Foreground(lipgloss.Color("240"))
+var timeStyle = lipgloss.NewStyle().
+	Align(lipgloss.Position(lipgloss.Right)).
+	Foreground(lipgloss.Color("240"))
 
 var keys = keyMap{
 	Up: key.NewBinding(
@@ -59,9 +58,10 @@ type keyMap struct {
 }
 
 type model struct {
-	table table.Model
-	keys  keyMap
-	help  help.Model
+	table   table.Model
+	keys    keyMap
+	help    help.Model
+	updated string
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -87,18 +87,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "f5": // refresh the table
+            t := "Last update: " + time.Now().Format("15:04:05")
 			m.table.SetRows(updateStreamers())
 			// Can't get rid of tea.Printf() because it breaks the table on refresh, why?!
 			// seems like forcing a ClearScreen works as a workaround.
-			return m, tea.ClearScreen
+			// updating the model doesn't help the table breaks still
+            return model{table: m.table, keys: m.keys, help: m.help, updated: t}, tea.ClearScreen
 		case "q", "ctrl+c", "ctrl+d": // quit
 			return m, tea.Quit
 		case "enter": // select and open to default browser TODO: make it OS agnostic ?
+			selection := "You selected " + m.table.SelectedRow()[1]
 			err := exec.Command("xdg-open", m.table.SelectedRow()[3]).Start()
 			if err != nil {
 				return m, tea.Println(err)
 			}
-			return m, tea.Printf("You selected %s", m.table.SelectedRow()[1])
+			return model{table: m.table, keys: m.keys, help: m.help, updated: selection}, nil
 		}
 	}
 	m.table, cmd = m.table.Update(msg)
@@ -108,7 +111,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	tbl := baseStyle.Render(m.table.View())
 	hlp := m.help.View(m.keys)
-	time_str := timeStyle.Render("refreshed at: " + t.Format("15:04:05"))
+	time_str := timeStyle.Render(m.updated)
 	// +4 for the outer top/bottom and header
 	height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
 
@@ -175,8 +178,6 @@ func startTUI() error {
 func updateStreamers() (rows []table.Row) {
 	f := openStreamerlist()
 
-	t = time.Now()
-
 	fScanner := bufio.NewScanner(f)
 	fScanner.Split(bufio.ScanLines)
 	i := 0
@@ -207,7 +208,7 @@ func updateStreamers() (rows []table.Row) {
 		}
 		// add a delay between each request so we won't get banned :S
 		i++
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(300 * time.Millisecond)
 	}
 	defer f.Close()
 	// clearTerm()
