@@ -17,13 +17,21 @@ import (
 )
 
 var baseStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.NormalBorder()).
+	BorderStyle(lipgloss.RoundedBorder()).
 	BorderForeground(lipgloss.Color("55"))
 
 // Doesn't look like it wants to align to the right... brobably I am using it wrong(?)
 var timeStyle = lipgloss.NewStyle().
-	Align(lipgloss.Position(lipgloss.Right)).
-	Foreground(lipgloss.Color("240"))
+	Width(78).
+	BorderStyle(lipgloss.RoundedBorder()).
+	BorderForeground(lipgloss.Color("54")).
+	Padding(0, 1, 0, 1).
+	Foreground(lipgloss.Color("242"))
+
+var helpStyle = lipgloss.NewStyle().
+	Padding(0).
+	Width(78).
+	Align(lipgloss.Right)
 
 var keys = keyMap{
 	Up: key.NewBinding(
@@ -120,12 +128,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	tbl := baseStyle.Render(m.table.View())
-	hlp := m.help.View(m.keys)
-	time_str := timeStyle.Render(m.updated)
+	hlp := helpStyle.Render(m.help.View(m.keys))
+	status := timeStyle.Render(m.updated)
 	// +4 for the outer top/bottom and header
 	height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
 
-	return tbl + strings.Repeat("\n", height) + time_str + "\n" + hlp + "\n"
+	return tbl + strings.Repeat("\n", height) + status + "\n" + hlp + "\n"
 }
 
 // This is the "main"
@@ -135,7 +143,7 @@ func startTUI() error {
 		{Title: "#", Width: 3},
 		{Title: "Streamer", Width: 22},
 		{Title: "Live?", Width: 8},
-		{Title: "URL", Width: 22 + 22},
+		{Title: "URL", Width: 37}, // so it fits in 80 columns
 	}
 
 	// create the rows
@@ -172,10 +180,13 @@ func startTUI() error {
 	// create the help
 	h := help.New()
 
+	u := "Last update: " + time.Now().Format("15:04:05")
+
 	// run the model
 	m := model{
-		table: t,
-		help:  h,
+		table:   t,
+		help:    h,
+		updated: u,
 	}
 	m.keys = keys
 	if _, err := tea.NewProgram(m).Run(); err != nil {
