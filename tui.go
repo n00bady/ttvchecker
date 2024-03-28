@@ -42,6 +42,10 @@ var keys = keyMap{
 		key.WithKeys("f5"),
 		key.WithHelp("f5", "refresh"),
 	),
+	FollowURL: key.NewBinding(
+		key.WithKeys("ctrl+f"),
+		key.WithHelp("ctrl+f", "open twitch in browser"),
+	),
 	Quit: key.NewBinding(
 		key.WithKeys("ctrl+d"),
 		key.WithKeys("q", "ctrl+c"),
@@ -50,11 +54,12 @@ var keys = keyMap{
 }
 
 type keyMap struct {
-	Up      key.Binding
-	Down    key.Binding
-	Select  key.Binding
-	Refresh key.Binding
-	Quit    key.Binding
+	Up        key.Binding
+	Down      key.Binding
+	Select    key.Binding
+	Refresh   key.Binding
+	FollowURL key.Binding
+	Quit      key.Binding
 }
 
 type model struct {
@@ -86,13 +91,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "ctrl+f":
+			err := exec.Command("xdg-open", "https://www.twitch.tv/directory/following/live").Start()
+			if err != nil {
+				return m, tea.Println(err)
+			}
 		case "f5": // refresh the table
-            t := "Last update: " + time.Now().Format("15:04:05")
+			t := "Last update: " + time.Now().Format("15:04:05")
 			m.table.SetRows(updateStreamers())
 			// Can't get rid of tea.Printf() because it breaks the table on refresh, why?!
 			// seems like forcing a ClearScreen works as a workaround.
 			// updating the model doesn't help the table breaks still
-            return model{table: m.table, keys: m.keys, help: m.help, updated: t}, tea.ClearScreen
+			return model{table: m.table, keys: m.keys, help: m.help, updated: t}, tea.ClearScreen
 		case "q", "ctrl+c", "ctrl+d": // quit
 			return m, tea.Quit
 		case "enter": // select and open to default browser TODO: make it OS agnostic ?
