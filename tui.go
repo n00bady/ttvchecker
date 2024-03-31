@@ -21,7 +21,7 @@ var baseStyle = lipgloss.NewStyle().
 	BorderForeground(lipgloss.Color("55"))
 
 // Doesn't look like it wants to align to the right... brobably I am using it wrong(?)
-var timeStyle = lipgloss.NewStyle().
+var statusStyle = lipgloss.NewStyle().
 	Width(78).
 	BorderStyle(lipgloss.RoundedBorder()).
 	BorderForeground(lipgloss.Color("54")).
@@ -29,9 +29,9 @@ var timeStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("242"))
 
 var helpStyle = lipgloss.NewStyle().
-	Padding(0).
+	Padding(0, 1, 0, 1).
 	Width(78).
-	Align(lipgloss.Right)
+	Align(lipgloss.Left)
 
 var keys = keyMap{
 	Up: key.NewBinding(
@@ -50,13 +50,12 @@ var keys = keyMap{
 		key.WithKeys("f5"),
 		key.WithHelp("f5", "refresh"),
 	),
-	FollowURL: key.NewBinding(
+	Following: key.NewBinding(
 		key.WithKeys("ctrl+f"),
 		key.WithHelp("ctrl+f", "open twitch in browser"),
 	),
 	Quit: key.NewBinding(
-		key.WithKeys("ctrl+d"),
-		key.WithKeys("q", "ctrl+c"),
+		key.WithKeys("q", "ctrl+c", "ctrl+d"),
 		key.WithHelp("q", "quit"),
 	),
 }
@@ -66,7 +65,7 @@ type keyMap struct {
 	Down      key.Binding
 	Select    key.Binding
 	Refresh   key.Binding
-	FollowURL key.Binding
+	Following key.Binding
 	Quit      key.Binding
 }
 
@@ -129,7 +128,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	tbl := baseStyle.Render(m.table.View())
 	hlp := helpStyle.Render(m.help.View(m.keys))
-	status := timeStyle.Render(m.updated)
+	status := statusStyle.Render(m.updated)
 	// +4 for the outer top/bottom and header
 	height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
 
