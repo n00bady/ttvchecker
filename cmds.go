@@ -16,9 +16,10 @@ const (
 )
 
 type stream struct {
-	name string
-	live bool
-	link string
+	name  string
+	live  bool
+	title string
+	url   string
 }
 
 // Checks the state of all the streamers on the config file
@@ -41,7 +42,7 @@ func checkStreamers(onlyLives bool, formatCSV bool) (streams []stream) {
 		}
 
 		if resp != nil {
-			isLive, err := parse(resp)
+			isLive, title, err := parse(resp)
 			if err != nil {
 				log.Println(err)
 			}
@@ -50,13 +51,13 @@ func checkStreamers(onlyLives bool, formatCSV bool) (streams []stream) {
 			// check if the onlyLives option is enabled and add only the
 			// streams that are live on the results if it is
 			if onlyLives && isLive {
-				results = append(results, stream{name: streamer, live: isLive, link: url + streamer})
+				results = append(results, stream{name: streamer, live: isLive, title: title, url: url+streamer})
 			} else if !onlyLives {
-				results = append(results, stream{name: streamer, live: isLive, link: url + streamer})
+				results = append(results, stream{name: streamer, live: isLive, title: title, url: url+streamer})
 			}
 		} else {
 			// show the stream as offline if the response is not what you expect
-			results = append(results, stream{name: streamer, live: false, link: url + streamer})
+			results = append(results, stream{name: streamer, live: false, title: "", url: url+streamer})
 		}
 		// add a delay between each request so we won't get banned :S
 		time.Sleep(500 * time.Millisecond)

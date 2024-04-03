@@ -50,7 +50,7 @@ func pPrint(s []stream) error {
 				{Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
 				{Text: n.name},
 				{Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sLive!%s", green, reset)},
-				{Text: n.link},
+				{Text: n.url},
 			}
 			table.Body.Cells = append(table.Body.Cells, r)
 		case false:
@@ -58,7 +58,7 @@ func pPrint(s []stream) error {
 				{Align: simpletable.AlignLeft, Text: fmt.Sprintf("%d", i)},
 				{Text: n.name},
 				{Align: simpletable.AlignLeft, Text: fmt.Sprintf("%sOffline%s", red, reset)},
-				{Text: n.link},
+				{Text: n.url},
 			}
 			table.Body.Cells = append(table.Body.Cells, r)
 		default:

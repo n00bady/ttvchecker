@@ -141,7 +141,7 @@ func startTUI() error {
 		{Title: "#", Width: 3},
 		{Title: "Streamer", Width: 22},
 		{Title: "Live?", Width: 8},
-		{Title: "URL", Width: 37}, // so it fits in 80 columns
+		{Title: "Title", Width: 37}, // so it fits in 80 columns
 	}
 
 	// create the rows
@@ -213,16 +213,16 @@ func updateStreamers() (rows []table.Row) {
 		}
 
 		if resp != nil {
-			isLive, err := parse(resp)
+			isLive, title, err := parse(resp)
 			if err != nil {
 				log.Println(err)
 			}
 			defer resp.Body.Close()
 
 			if isLive {
-				rows = append(rows, table.Row{strconv.Itoa(i), streamer, "LIVE", url + streamer})
+				rows = append(rows, table.Row{strconv.Itoa(i), streamer, "LIVE", title})
 			} else {
-				rows = append(rows, table.Row{strconv.Itoa(i), streamer, "OFFLINE", url + streamer})
+				rows = append(rows, table.Row{strconv.Itoa(i), streamer, "OFFLINE", title})
 			}
 		}
 		// add a delay between each request so we won't get banned :S
