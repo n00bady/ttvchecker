@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// Make my own usage message
-	usgmsg := "Commands:\n" +
+	const usgmsg = "Commands:\n" +
 		"\t check \tCheck if the streams are online.\n" +
 		"\t\t  -l \tShow only the streams that are live.\n" +
 		"\t\t --csv \tGet the output in csv format.\n\n" +

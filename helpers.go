@@ -13,7 +13,7 @@ import (
 
 func openStreamerlist() *os.File {
 	streamerlist := createStreamerlist()
-	f, err := os.OpenFile(streamerlist, os.O_RDONLY, 644)
+	f, err := os.OpenFile(streamerlist, os.O_RDONLY, 0644)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)

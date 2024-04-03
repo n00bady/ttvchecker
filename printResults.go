@@ -16,12 +16,12 @@ var (
 	red       = "\033[31m"
 	green     = "\033[32m"
 	yellow    = "\033[33m"
-	blue      = "\033[34m"
-	purple    = "\033[35m"
-	cyan      = "\033[36m"
-	gray      = "\033[37m"
-	dark_gray = "\x1b[38;5;236m"
-	white     = "\033[97m"
+	// blue      = "\033[34m"
+	// purple    = "\033[35m"
+	// cyan      = "\033[36m"
+	// gray      = "\033[37m"
+	// dark_gray = "\x1b[38;5;236m"
+	// white     = "\033[97m"
 )
 
 // gives color to output and prints the results
@@ -29,7 +29,7 @@ var (
 // returns an error or nil if no errors
 func pPrint(s []stream) error {
 	if len(s) == 0 {
-		return errors.New("Input slice is empty!")
+		return errors.New("input slice is empty")
 	}
 
 	table := simpletable.New()
@@ -62,7 +62,7 @@ func pPrint(s []stream) error {
 			}
 			table.Body.Cells = append(table.Body.Cells, r)
 		default:
-			return errors.New("Unexpected error on reading the bool from stream struct.")
+			return errors.New("unexpected error on reading the bool from stream struct")
 		}
 	}
 

@@ -20,7 +20,6 @@ var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.RoundedBorder()).
 	BorderForeground(lipgloss.Color("55"))
 
-// Doesn't look like it wants to align to the right... brobably I am using it wrong(?)
 var statusStyle = lipgloss.NewStyle().
 	Width(78).
 	BorderStyle(lipgloss.RoundedBorder()).
