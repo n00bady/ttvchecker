@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -94,7 +93,9 @@ func (k keyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-func (m model) Init() tea.Cmd { return tea.ClearScreen }
+func (m model) Init() tea.Cmd {
+	return tea.Batch(tea.ClearScreen, refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
+}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
@@ -115,7 +116,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter": // select and open to default browser
 			m.updated = "You selected " + m.table.SelectedRow()[1]
-			err := exec.Command("xdg-open", url + m.table.SelectedRow()[1]).Start()
+			err := exec.Command("xdg-open", url+m.table.SelectedRow()[1]).Start()
 			if err != nil {
 				return m, tea.Println(err)
 			}
@@ -158,33 +159,22 @@ func (m model) View() string {
 	return tbl + strings.Repeat("\n", height) + status + "\n" + hlp + "\n"
 }
 
-// This is the "main"
-func startTUI() error {
-	// create the columns and header titles
+func InitialModel() model {
 	columns := []table.Column{
 		{Title: "#", Width: 3},
 		{Title: "Streamer", Width: 22},
 		{Title: "Live?", Width: 8},
-		{Title: "Title", Width: 37}, // so it fits in 80 columns
+		{Title: "Title", Width: 37}, // so it kinda fits in 80 columns
 	}
 
-	// create the rows
-    // TODO: Change the 1st time of checking streamers to construct the table 
-    // so it doesn't use the old code
-	rows := updateStreamers()
-    // It helps to add the streamerlist at the start to be able to show progress
-    // updates but also if you add a streamer while the TUI is open you have to
-    // restart.
+	// It helps to add the streamerlist at the start to be able to show progress
+	// updates but also if you add a streamer while the TUI is open you have to
+	// restart.
 	streamerlist := initStreamerList()
-	// var tHeight int // max height of the table
-	// if len(rows) >= 15 {
-	// 	tHeight = 15
-	// } else {
-	// 	tHeight = len(rows)
-	// }
-    tHeight := 15 //Temp change so it will always until I decide what to do with it
+	// Temp change so it will always show 15 rows until I decide what to do with it
+	tHeight := 15
 
-	// make a table style
+	// Init the table style
 	s := table.DefaultStyles()
 	s.Header = s.Header.
 		BorderStyle(lipgloss.NormalBorder()).
@@ -200,13 +190,13 @@ func startTUI() error {
 	// Create the initial table
 	t := table.New(
 		table.WithColumns(columns),
-		table.WithRows(rows),
+		// table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithHeight(tHeight),
 		table.WithStyles(s),
 	)
 
-	// create the help
+	// Init the help
 	h := help.New()
 
 	u := "Last update: " + time.Now().Format("15:04:05")
@@ -215,17 +205,24 @@ func startTUI() error {
 	spin.Spinner = spinner.Dot
 	spin.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
-	// run the model
+	// Init the actual model
 	m := model{
 		table:        t,
+		keys:         keys,
 		help:         h,
 		updated:      u,
 		spinner:      spin,
-		spin:         false,
+		spin:         true,
 		index:        0,
 		streamerlist: streamerlist,
 	}
-	m.keys = keys
+
+	return m
+}
+
+// This is where it starts
+func startTUI() error {
+	m := InitialModel()
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		return err
 	}
@@ -233,7 +230,7 @@ func startTUI() error {
 	return nil
 }
 
-// Takes the streamer string and the index, update the Rows and 
+// Takes the streamer string and the index, update the Rows and
 // returns a tea.Cmd to show progress
 func refreshStreamer(streamer string, index int) tea.Cmd {
 	d := 300 * time.Millisecond
@@ -268,43 +265,3 @@ func initStreamerList() []string {
 	return streamerlist
 }
 
-// Soon hopefully this will not be needed...
-func updateStreamers() (rows []table.Row) {
-	f := openStreamerlist()
-
-	fScanner := bufio.NewScanner(f)
-	fScanner.Split(bufio.ScanLines)
-	i := 0
-	for fScanner.Scan() {
-		streamer := fScanner.Text()
-		// probably I should use bubbletea to print those
-		// but it works fine like that so I will leave it
-		// until it bites my ass
-		// fmt.Println("Checking ", yellow+streamer+reset, "...")
-
-		resp, err := getResponse(url + streamer)
-		if err != nil {
-			log.Println(err)
-		}
-
-		if resp != nil {
-			isLive, title, err := parse(resp)
-			if err != nil {
-				log.Println(err)
-			}
-			defer resp.Body.Close()
-
-			if isLive {
-				rows = append(rows, table.Row{strconv.Itoa(i), streamer, "LIVE", title})
-			} else {
-				rows = append(rows, table.Row{strconv.Itoa(i), streamer, "OFFLINE", title})
-			}
-		}
-		// add a delay between each request so we won't get banned :S
-		i++
-		time.Sleep(300 * time.Millisecond)
-	}
-	defer f.Close()
-
-	return rows
-}
