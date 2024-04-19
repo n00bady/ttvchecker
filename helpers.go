@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"log"
@@ -9,6 +10,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/charmbracelet/bubbles/table"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func openStreamerlist() *os.File {
@@ -133,4 +137,40 @@ func contains(str []string, v string) bool {
 	}
 
 	return false
+}
+
+// -- These are used for the TUI --
+// Takes the streamer string and the index, update the Rows and
+// returns a tea.Cmd to show progress
+func refreshStreamer(streamer string, index int) tea.Cmd {
+	d := 300 * time.Millisecond
+	resp, _ := getResponse(url + streamer)
+
+	if resp != nil {
+		isLive, title, _ := parse(resp)
+		defer resp.Body.Close()
+
+		if isLive {
+			Rows = append(Rows, table.Row{strconv.Itoa(index), streamer, "LIVE", title})
+		} else {
+			Rows = append(Rows, table.Row{strconv.Itoa(index), streamer, "OFFLINE", title})
+		}
+	}
+	return tea.Tick(d, func(t time.Time) tea.Msg {
+		return updatedMsg("done")
+	})
+}
+
+// Constructs a list of all the streamers to go with the model
+func initStreamerList() []string {
+	var streamerlist []string
+	f := openStreamerlist()
+
+	fScanner := bufio.NewScanner(f)
+	fScanner.Split(bufio.ScanLines)
+	for fScanner.Scan() {
+		streamerlist = append(streamerlist, fScanner.Text())
+	}
+
+	return streamerlist
 }

@@ -1,71 +1,16 @@
 package main
 
 import (
-	"bufio"
 	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-
-var baseStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.RoundedBorder()).
-	BorderForeground(lipgloss.Color("55"))
-
-var statusStyle = lipgloss.NewStyle().
-	Width(78).
-	BorderStyle(lipgloss.RoundedBorder()).
-	BorderForeground(lipgloss.Color("54")).
-	Padding(0, 1, 0, 1).
-	Foreground(lipgloss.Color("242"))
-
-var helpStyle = lipgloss.NewStyle().
-	Padding(0, 1, 0, 1).
-	Width(78).
-	Align(lipgloss.Left)
-
-var keys = keyMap{
-	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("↑/k", "move up"),
-	),
-	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("↓/j", "move down"),
-	),
-	Select: key.NewBinding(
-		key.WithKeys("enter"),
-		key.WithHelp("enter", "select"),
-	),
-	Refresh: key.NewBinding(
-		key.WithKeys("f5"),
-		key.WithHelp("f5", "refresh"),
-	),
-	Following: key.NewBinding(
-		key.WithKeys("ctrl+f"),
-		key.WithHelp("ctrl+f", "open twitch in browser"),
-	),
-	Quit: key.NewBinding(
-		key.WithKeys("q", "ctrl+c", "ctrl+d"),
-		key.WithHelp("q", "quit"),
-	),
-}
-
-type keyMap struct {
-	Up        key.Binding
-	Down      key.Binding
-	Select    key.Binding
-	Refresh   key.Binding
-	Following key.Binding
-	Quit      key.Binding
-}
 
 type updatedMsg string
 
@@ -80,17 +25,6 @@ type model struct {
 	spin         bool
 	index        int
 	streamerlist []string
-}
-
-func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down, k.Select, k.Refresh, k.Quit}
-}
-
-func (k keyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Up, k.Down, k.Select},
-		{k.Refresh, k.Quit},
-	}
 }
 
 func (m model) Init() tea.Cmd {
@@ -229,39 +163,3 @@ func startTUI() error {
 
 	return nil
 }
-
-// Takes the streamer string and the index, update the Rows and
-// returns a tea.Cmd to show progress
-func refreshStreamer(streamer string, index int) tea.Cmd {
-	d := 300 * time.Millisecond
-	resp, _ := getResponse(url + streamer)
-
-	if resp != nil {
-		isLive, title, _ := parse(resp)
-		defer resp.Body.Close()
-
-		if isLive {
-			Rows = append(Rows, table.Row{strconv.Itoa(index), streamer, "LIVE", title})
-		} else {
-			Rows = append(Rows, table.Row{strconv.Itoa(index), streamer, "OFFLINE", title})
-		}
-	}
-	return tea.Tick(d, func(t time.Time) tea.Msg {
-		return updatedMsg("done")
-	})
-}
-
-// Constructs a list of all the streamers to go with the model
-func initStreamerList() []string {
-	var streamerlist []string
-	f := openStreamerlist()
-
-	fScanner := bufio.NewScanner(f)
-	fScanner.Split(bufio.ScanLines)
-	for fScanner.Scan() {
-		streamerlist = append(streamerlist, fScanner.Text())
-	}
-
-	return streamerlist
-}
-
