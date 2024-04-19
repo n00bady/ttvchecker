@@ -2,7 +2,6 @@ package main
 
 import (
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -43,6 +42,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Println(err)
 			}
 		case "f5": // refresh the table
+            if m.spin {
+                return m, nil
+            }
 			m.spin = true
 			m.updated = "Checking " + m.streamerlist[0] + "... "
 			return m, tea.Batch(refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
@@ -88,9 +90,9 @@ func (m model) View() string {
 		status = statusStyle.Render(m.spinner.View() + m.updated)
 	}
 	// +4 for the outer top/bottom and header
-	height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
+	// height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
 
-	return tbl + strings.Repeat("\n", height) + status + "\n" + hlp + "\n"
+	return tbl + "\n" + status + "\n" + hlp + "\n"
 }
 
 func InitialModel() model {
