@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"os/exec"
 	"time"
 
@@ -158,6 +159,7 @@ func InitialModel() model {
 
 // This is where it starts
 func startTUI() error {
+    rand.New(rand.NewSource(time.Now().Unix()))
 	m := InitialModel()
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		return err
