@@ -32,32 +32,34 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+    var cmd tea.Cmd
+    var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+        case "j","k","u","d":
+            m.table, cmd = m.table.Update(msg)
+            cmds = append(cmds, cmd)
 		case "ctrl+f":
 			err := exec.Command("xdg-open", "https://www.twitch.tv/directory/following/live").Start()
 			if err != nil {
-				return m, tea.Println(err)
+                cmds = append(cmds, tea.Println(err))
 			}
 		case "f5": // refresh the table
-			if m.spin {
-				return m, nil
+			if !m.spin {
+                m.spin = true
+                m.updated = "Checking " + m.streamerlist[0] + "... "
+                cmds = append(cmds, refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
 			}
-			m.spin = true
-			m.updated = "Checking " + m.streamerlist[0] + "... "
-			return m, tea.Batch(refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
 		case "q", "ctrl+c", "ctrl+d": // quit
 			return m, tea.Quit
 		case "enter": // select and open to default browser
 			m.updated = "You selected " + m.table.SelectedRow()[1]
 			err := exec.Command("xdg-open", url+m.table.SelectedRow()[1]).Start()
 			if err != nil {
-				return m, tea.Println(err)
+                cmds = append(cmds, tea.Println(err))
 			}
-			return m, nil
 		}
 	case updatedMsg:
 		if m.index >= len(m.streamerlist)-1 {
@@ -66,20 +68,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.index = 0
 			m.updated = "Last updated: " + time.Now().Format("15:04:05")
 			Rows = nil
-			return m, cmd
-		}
-		m.index++
-		m.updated = "Checking " + m.streamerlist[m.index] + "... "
-		return m, refreshStreamer(m.streamerlist[m.index], m.index)
+		} else {
+            m.index++
+            m.updated = "Checking " + m.streamerlist[m.index] + "... "
+            cmds = append(cmds, refreshStreamer(m.streamerlist[m.index], m.index))
+        }
 	case spinner.TickMsg:
 		if m.spin {
-			m.spinner, cmd = m.spinner.Update(msg)
-			return m, cmd
+            m.spinner, cmd = m.spinner.Update(msg)
+            cmds = append(cmds, cmd)
 		}
 	}
 
-	m.table, cmd = m.table.Update(msg)
-	return m, cmd
+    return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
