@@ -144,7 +144,7 @@ func contains(str []string, v string) bool {
 // Takes the streamer string and the index, update the Rows and
 // returns a tea.Cmd to show progress
 func refreshStreamer(streamer string, index int) tea.Cmd { 
-	d := time.Duration(rand.Intn(300)) * time.Millisecond
+	d := time.Duration(rand.Intn(300)+100) * time.Millisecond
 	resp, _ := getResponse(url + streamer)
 
 	if resp != nil {

@@ -43,9 +43,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Println(err)
 			}
 		case "f5": // refresh the table
-            if m.spin {
-                return m, nil
-            }
+			if m.spin {
+				return m, nil
+			}
 			m.spin = true
 			m.updated = "Checking " + m.streamerlist[0] + "... "
 			return m, tea.Batch(refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
@@ -72,11 +72,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.updated = "Checking " + m.streamerlist[m.index] + "... "
 		return m, refreshStreamer(m.streamerlist[m.index], m.index)
 	case spinner.TickMsg:
-		var cmd tea.Cmd
 		if m.spin {
 			m.spinner, cmd = m.spinner.Update(msg)
+			return m, cmd
 		}
-		return m, cmd
 	}
 
 	m.table, cmd = m.table.Update(msg)
@@ -159,7 +158,7 @@ func InitialModel() model {
 
 // This is where it starts
 func startTUI() error {
-    rand.New(rand.NewSource(time.Now().Unix()))
+	rand.New(rand.NewSource(time.Now().Unix()))
 	m := InitialModel()
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		return err
