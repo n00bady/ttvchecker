@@ -20,7 +20,7 @@ type model struct {
 	table        table.Model
 	keys         keyMap
 	help         help.Model
-	updated      string
+	statusText   string
 	spinner      spinner.Model
 	spin         bool
 	index        int
@@ -49,13 +49,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "f5": // refresh the table
 			if !m.spin {
 				m.spin = true
-				m.updated = "Checking " + m.streamerlist[0] + "... "
+				m.statusText = "Checking " + m.streamerlist[0] + "... "
 				cmds = append(cmds, refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
 			}
 		case "q", "ctrl+c", "ctrl+d": // quit
 			return m, tea.Quit
 		case "enter": // select and open to default browser
-			m.updated = "You selected " + m.table.SelectedRow()[1]
+			m.statusText = "You selected " + m.table.SelectedRow()[1]
 			err := exec.Command("xdg-open", url+m.table.SelectedRow()[1]).Start()
 			if err != nil {
 				cmds = append(cmds, tea.Println(err))
@@ -66,11 +66,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.spin = false
 			m.table.SetRows(Rows)
 			m.index = 0
-			m.updated = "Last updated: " + time.Now().Format("15:04:05")
+			m.statusText = "Last updated: " + time.Now().Format("15:04:05")
 			Rows = nil
 		} else {
 			m.index++
-			m.updated = "Checking " + m.streamerlist[m.index] + "... "
+			m.statusText = "Checking " + m.streamerlist[m.index] + "... "
 			cmds = append(cmds, refreshStreamer(m.streamerlist[m.index], m.index))
 		}
 	case spinner.TickMsg:
@@ -86,9 +86,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	tbl := baseStyle.Render(m.table.View())
 	hlp := helpStyle.Render(m.help.View(m.keys))
-	status := statusStyle.Render(m.updated)
+	status := statusStyle.Render(m.statusText)
 	if m.spin {
-		status = statusStyle.Render(m.spinner.View() + m.updated)
+		status = statusStyle.Render(m.spinner.View() + m.statusText)
 	}
 	// +4 for the outer top/bottom and header
 	// height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
@@ -147,7 +147,7 @@ func InitialModel() model {
 		table:        t,
 		keys:         keys,
 		help:         h,
-		updated:      u,
+		statusText:   u,
 		spinner:      spin,
 		spin:         true,
 		index:        0,
