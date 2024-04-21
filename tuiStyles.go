@@ -7,7 +7,6 @@ var baseStyle = lipgloss.NewStyle().
 	BorderForeground(lipgloss.Color("55"))
 
 var statusStyle = lipgloss.NewStyle().
-	Width(78).
 	BorderStyle(lipgloss.RoundedBorder()).
 	BorderForeground(lipgloss.Color("54")).
 	Padding(0, 1, 0, 1).

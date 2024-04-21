@@ -36,6 +36,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.table.SetWidth(msg.Width - 4)
+		m.table.SetHeight(findMin(msg.Height - 10, len(m.streamerlist)))
+		m.table.SetColumns(
+			[]table.Column{
+				{Title: "#", Width: 3},
+				{Title: "Streamer", Width: 22},
+				{Title: "Live?", Width: 8},
+				{Title: "Title", Width: msg.Width - 45}, // all the other fields + borders + padding = 45
+			},
+		)
+        statusStyle.Width(msg.Width - 4)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j", "k", "u", "d":

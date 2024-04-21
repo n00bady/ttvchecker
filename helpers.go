@@ -175,3 +175,12 @@ func initStreamerList() []string {
 
 	return streamerlist
 }
+
+// Takes 2 int and return the smaller one if equal returns the first one
+func findMin(a, b int) int {
+    if a > b {
+        return b
+    } else {
+        return a
+    }
+}
