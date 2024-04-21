@@ -31,7 +31,7 @@ func main() {
 	// Customize flag.Usage() with our own message
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [command] [args]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, usgmsg)
+		fmt.Fprint(os.Stderr, usgmsg)
 	}
 
 	// parse global options (they do not exists... yet)
