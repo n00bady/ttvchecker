@@ -50,7 +50,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         statusStyle.Width(msg.Width - 4)
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "j", "k", "u", "d":
+		case "j", "k", "u", "d", tea.KeyUp.String(), tea.KeyDown.String():
 			m.table, cmd = m.table.Update(msg)
 			cmds = append(cmds, cmd)
 		case "ctrl+f":
