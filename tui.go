@@ -47,7 +47,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				{Title: "Title", Width: msg.Width - 45}, // all the other fields + borders + padding = 45
 			},
 		)
-        statusStyle.Width(msg.Width - 4)
+		statusStyle = statusStyle.Width(msg.Width - 4)
+		cmds = append(cmds, tea.ClearScreen)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j", "k", "u", "d", tea.KeyUp.String(), tea.KeyDown.String():
@@ -102,8 +103,6 @@ func (m model) View() string {
 	if m.spin {
 		status = statusStyle.Render(m.spinner.View() + m.statusText)
 	}
-	// +4 for the outer top/bottom and header
-	// height := m.table.Height() + 4 - strings.Count(tbl, "\n") - strings.Count(hlp, "\n")
 
 	return tbl + "\n" + status + "\n" + hlp + "\n"
 }
