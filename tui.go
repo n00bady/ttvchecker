@@ -38,7 +38,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.table.SetWidth(msg.Width - 4)
-		m.table.SetHeight(findMin(msg.Height - 10, len(m.streamerlist)))
+		m.table.SetHeight(findMin(msg.Height - 7, len(m.streamerlist) + 2)) // + 2 for the header and it's line
 		m.table.SetColumns(
 			[]table.Column{
 				{Title: "#", Width: 3},
