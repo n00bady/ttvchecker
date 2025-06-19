@@ -26,7 +26,7 @@ require (
 	golang.org/x/text v0.23.0 // indirect
 )
 
-require github.com/charmbracelet/bubbles v0.18.0
+require github.com/charmbracelet/bubbles v0.21.0
 
 require (
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
