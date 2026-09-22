@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -17,7 +18,7 @@ import (
 // I imagine there is better way to parse the json-ld ???
 func parse(response *http.Response) (bool, string, error) {
 	islive := false
-    title := ""
+	title := ""
 
 	doc, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
@@ -31,14 +32,18 @@ func parse(response *http.Response) (bool, string, error) {
 			if strings.Contains(s.Text(), "\"isLiveBroadcast\":true") {
 				islive = true
 			}
-            // find the title if it exists and take only the substring
-            // that we care about
-            if strings.Contains(s.Text(), "\"description\":") {
-                i := strings.Index(s.Text(), "\"description\":")
-                j := strings.Index(s.Text(), "\"embedUrl\":")
+			// find the title if it exists and take only the substring
+			// that we care about
+			if strings.Contains(s.Text(), "\"description\":") {
+				i := strings.Index(s.Text(), "\"description\":")
+				j := strings.Index(s.Text(), "\"embedUrl\":")
 
-                title = s.Text()[i+15:j-2]
-            }
+				if i < 1 || j < 1 {
+					fmt.Errorf("cannot find description or embedUrl substring for: %d", s.Text())
+				} else {
+					title = s.Text()[i+15 : j-2]
+				}
+			}
 		}
 	})
 
