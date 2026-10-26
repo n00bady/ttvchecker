@@ -2,10 +2,10 @@ package main
 
 import (
 	"bufio"
-    "math/rand"
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,7 +18,7 @@ import (
 
 func openStreamerlist() *os.File {
 	streamerlist := createStreamerlist()
-	f, err := os.OpenFile(streamerlist, os.O_RDONLY, 0644)
+	f, err := os.OpenFile(streamerlist, os.O_RDONLY, 0o644)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
@@ -143,7 +143,7 @@ func contains(str []string, v string) bool {
 // -- These are used for the TUI --
 // Takes the streamer string and the index, update the Rows and
 // returns a tea.Cmd to show progress
-func refreshStreamer(streamer string, index int) tea.Cmd { 
+func refreshStreamer(streamer string, index int) tea.Cmd {
 	d := time.Duration(rand.Intn(300)+100) * time.Millisecond
 	resp, _ := getResponse(url + streamer)
 
@@ -178,9 +178,9 @@ func initStreamerList() []string {
 
 // Takes 2 int and return the smaller one if equal returns the first one
 func findMin(a, b int) int {
-    if a > b {
-        return b
-    } else {
-        return a
-    }
+	if a > b {
+		return b
+	} else {
+		return a
+	}
 }

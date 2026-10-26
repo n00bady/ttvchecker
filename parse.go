@@ -1,48 +1,57 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 // Takes an http response and return a bool and an error
 // First I parse the html response and search for the
-// <script> token that has type = application/ls+json
-// this one only exist on streams that are live
-// and include inside various info about the stream
-// such as the "isLiveBroadcast":true which if it exists
-// it's obviously an Live stream
-// I imagine there is better way to parse the json-ld ???
+// <script> token that has type = application/ld+json
+// then partially create the data structure for the json
+// with only the fields I am interested on and use encoding/json 
+// to Unmarshal them.
 func parse(response *http.Response) (bool, string, error) {
 	islive := false
-	title := ""
+	var title string
 
 	doc, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
 		return false, title, err
 	}
-	doc.Find("script").Each(func(i int, s *goquery.Selection) {
-		t, _ := s.Attr("type")
-		if t == "application/ld+json" {
-			// could this be parsed in a better way ?
-			// it's json-ld
-			if strings.Contains(s.Text(), "\"isLiveBroadcast\":true") {
-				islive = true
-			}
-			// find the title if it exists and take only the substring
-			// that we care about
-			if strings.Contains(s.Text(), "\"description\":") {
-				i := strings.Index(s.Text(), "\"description\":")
-				j := strings.Index(s.Text(), "\"embedUrl\":")
 
-				if i < 1 || j < 1 {
-					fmt.Errorf("cannot find description or embedUrl substring for: %d", s.Text())
-				} else {
-					title = s.Text()[i+15 : j-2]
-				}
+	// These nested structs are annoying...
+	// I added some fields that I don't use right now, maybe for the future ???
+	doc.Find("script[type='application/ld+json']").Each(func(i int, s *goquery.Selection) {
+		var data struct {
+			Context string `json:"@context"`
+			Graph   []struct {
+				Type        string `json:"@type"`
+				Description string `json:"description"`
+				Name        string `json:"name"`
+				EmbedURL    string `json:"embedUrl"`
+				Publication struct {
+					Type             string `json:"@type"`
+					IsLiveBroadcast  bool   `json:"isLiveBroadcast"`
+					StartDate        string `json:"startDate"`
+					EndDate          string `json:"endDate"`
+				} `json:"publication"`
+				ThumbnailURL []string `json:"thumbnailUrl"`
+				UploadDate   string   `json:"uploadDate"`
+			} `json:"@graph"`
+		}
+
+		if err := json.Unmarshal([]byte(s.Text()), &data); err != nil {
+			return
+		}
+
+		for _, item := range data.Graph {
+			if item.Type == "VideoObject" {
+				islive = item.Publication.IsLiveBroadcast
+				title = item.Description
+				break
 			}
 		}
 	})
