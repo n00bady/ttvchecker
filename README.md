@@ -1,23 +1,20 @@
 ## Description
-A simple tool to check if your favorite streamers are live from
+A simple tool to check if your favorite streamers are live without using the twitch api from
 the command line now with an interactive TUI made with bubbletea!  
 
 ## Install
-I maintain an AUR pkg [here](https://aur.archlinux.org/packages/ttvchecker)
-There are also "examples" for a PKGBUILD and VoidLinux pkg in the repo.
+I maintain an AUR pkg [here](https://aur.archlinux.org/packages/ttvchecker) just install it 
+with `yay -S ttvchecker` or whatever aur manager you use.
 
 ## Usage
 `ttvchecker add <streamerName>` to add a streamer.  
 `ttvchecker del <streamerName>` to delete a streamer.  
-You can add/del several at the same time by seperating them with a space.  
+You can add/del several at the same time by seperating them with a space you can either just add 
+their username or the full url to their stream, either should work.
+Of course you can also add the streamers directly to the config file in `$HOME/.config/ttvchecker/`
 `ttvchecker check` to see which streamers are live.  
 `ttvchecker tui` to start the interactive TUI!  
 
-You need to add the streamer's name as is being shown in the url e.g.:  
-  To add [KEYB1ND's](https://www.twitch.tv/keyb1nd_) stream you need to go
-  to his stream and use the name that appears in the url https://www.twitch.tv/`keyb1nd_` <- this one
-  not the one that shown in the page or the title, because they can be different.
-Of course you can also add the streamers directly to the config file in `$HOME/.config/ttvchecker/`
 
 For more see `ttvchecker help`
 
@@ -29,13 +26,9 @@ Also it depends on xdg-open to open the streams to your default browser.
 `go build .`
 
 ## TODO
-* Find a way to make the response parsing more reliable because sometimes some streams appear as offline
-while the are live and vice versa.
-* Make it possible to add a streamer by the entire url.
-* Make it cross-platform.(Works only on Linux for now.)
+* Maybe make it cross-platform ? (Works only on Linux for now.)
 * Implement the streamer add and delete function in the TUI.
-* Resize the TUI acording to the terminal size.
-* Ability to check if a certain streamer given by argument is live.
+* Ability to check if a certain streamer is live given by argument.
 * ...
 * ???
 
