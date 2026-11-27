@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -11,7 +12,7 @@ import (
 // First I parse the html response and search for the
 // <script> token that has type = application/ld+json
 // then partially create the data structure for the json
-// with only the fields I am interested on and use encoding/json 
+// with only the fields I am interested on and use encoding/json
 // to Unmarshal them.
 func parse(response *http.Response) (bool, string, error) {
 	islive := false
@@ -22,38 +23,34 @@ func parse(response *http.Response) (bool, string, error) {
 		return false, title, err
 	}
 
-	// These nested structs are annoying...
-	// I added some fields that I don't use right now, maybe for the future ???
-	doc.Find("script[type='application/ld+json']").Each(func(i int, s *goquery.Selection) {
+	// Only decode the fields needed to decide whether the stream is live.
+	doc.Find("script[type='application/ld+json']").EachWithBreak(func(i int, s *goquery.Selection) bool {
 		var data struct {
-			Context string `json:"@context"`
-			Graph   []struct {
+			Graph []struct {
 				Type        string `json:"@type"`
 				Description string `json:"description"`
-				Name        string `json:"name"`
-				EmbedURL    string `json:"embedUrl"`
 				Publication struct {
-					Type             string `json:"@type"`
-					IsLiveBroadcast  bool   `json:"isLiveBroadcast"`
-					StartDate        string `json:"startDate"`
-					EndDate          string `json:"endDate"`
+					IsLiveBroadcast bool `json:"isLiveBroadcast"`
 				} `json:"publication"`
-				ThumbnailURL []string `json:"thumbnailUrl"`
-				UploadDate   string   `json:"uploadDate"`
 			} `json:"@graph"`
 		}
 
+		// A script can be malformed or describe something else entirely; keep
+		// looking in the remaining blocks in that case.
 		if err := json.Unmarshal([]byte(s.Text()), &data); err != nil {
-			return
+			return true
 		}
 
 		for _, item := range data.Graph {
 			if item.Type == "VideoObject" {
 				islive = item.Publication.IsLiveBroadcast
-				title = item.Description
-				break
+				title = strings.TrimSpace(item.Description)
+				// The first VideoObject is the current stream; later blocks
+				// can contain stale cached data and must not overwrite it.
+				return false
 			}
 		}
+		return true
 	})
 
 	return islive, title, nil

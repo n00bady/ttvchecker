@@ -7,9 +7,12 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	neturl "net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -46,31 +49,30 @@ func openStreamerlist() *os.File {
 func createStreamerlist() string {
 	configPath := constructConfigPath()
 
-	// if the config folder doesn't exits then create it and the streamerlist.txt
-	if !checkFileExist(configPath) {
-		err := os.Mkdir(configPath, os.ModePerm)
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-		}
-		f, err := os.Create(configPath + "/streamerlist.txt")
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-		}
-		f.Close()
+	// Create the whole path, including ~/.config when it does not exist yet.
+	if err := os.MkdirAll(configPath, 0o700); err != nil {
+		log.Println(err)
+		os.Exit(1)
 	}
 
-	// if the config folder does exist but the streamerlist.txt does not then create it
-	if !checkFileExist(configPath + "/streamerlist.txt") {
-		_, err := os.Create(configPath + "/streamerlist.txt")
+	listPath := filepath.Join(configPath, "streamerlist.txt")
+	if !checkFileExist(listPath) {
+		f, err := os.OpenFile(listPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 		if err != nil {
+			// Another process may have created it between the check and here.
+			if !errors.Is(err, os.ErrExist) {
+				log.Println(err)
+				os.Exit(1)
+			}
+			return listPath
+		}
+		if err := f.Close(); err != nil {
 			log.Println(err)
 			os.Exit(1)
 		}
 	}
 
-	return configPath + "/streamerlist.txt"
+	return listPath
 }
 
 // returns the user's .config path
@@ -120,9 +122,13 @@ func getResponse(link string) (*http.Response, error) {
 	req.Header.Set("User-Agent", userAgent)
 	resp, err := client.Do(req)
 	if err != nil {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
 		return nil, errors.New("Response Status Code: " + strconv.Itoa(resp.StatusCode))
 	}
 
@@ -138,6 +144,58 @@ func contains(str []string, v string) bool {
 	}
 
 	return false
+}
+
+// reads the non-empty lines of a streamer list, trimming surrounding spaces
+func readStreamerNames(path string) ([]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var names []string
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		name := strings.TrimSpace(scanner.Text())
+		if name != "" {
+			names = append(names, name)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return names, nil
+}
+
+var streamerNamePattern = regexp.MustCompile(`^[a-z0-9_]{1,25}$`)
+
+// normalizes a streamer username or twitch.tv URL, returning "" for invalid input
+func normalizeStreamerName(raw string) string {
+	name := strings.TrimSpace(raw)
+	// net/url only populates Host when a scheme or "//" is present.
+	// Supply the missing scheme for schemeless twitch.tv URLs.
+	lower := strings.ToLower(name)
+	if strings.HasPrefix(lower, "www.twitch.tv/") || strings.HasPrefix(lower, "twitch.tv/") {
+		name = "https://" + name
+	}
+
+	if u, err := neturl.Parse(name); err == nil && u.Host != "" {
+		host := strings.ToLower(u.Hostname())
+		if host == "twitch.tv" || host == "www.twitch.tv" {
+			name = strings.Trim(u.Path, "/")
+			if i := strings.Index(name, "/"); i >= 0 {
+				name = name[:i]
+			}
+		}
+	}
+	name = strings.ToLower(strings.Trim(name, "/"))
+	if !streamerNamePattern.MatchString(name) {
+		return ""
+	}
+
+	return name
 }
 
 // -- These are used for the TUI --
@@ -164,16 +222,13 @@ func refreshStreamer(streamer string, index int) tea.Cmd {
 
 // Constructs a list of all the streamers to go with the model
 func initStreamerList() []string {
-	var streamerlist []string
-	f := openStreamerlist()
-
-	fScanner := bufio.NewScanner(f)
-	fScanner.Split(bufio.ScanLines)
-	for fScanner.Scan() {
-		streamerlist = append(streamerlist, fScanner.Text())
+	names, err := readStreamerNames(createStreamerlist())
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
 	}
 
-	return streamerlist
+	return names
 }
 
 // Takes 2 int and return the smaller one if equal returns the first one

@@ -113,6 +113,36 @@ func TestFindMin(t *testing.T) {
 	}
 }
 
+func TestNormalizeStreamerName(t *testing.T) {
+	tests := []struct {
+		name string
+		raw  string
+		want string
+	}{
+		{name: "plain login", raw: "foo", want: "foo"},
+		{name: "whitespace and case", raw: "  Foo  ", want: "foo"},
+		{name: "full URL", raw: "https://www.twitch.tv/foo", want: "foo"},
+		{name: "schemeless www URL", raw: "www.twitch.tv/foo", want: "foo"},
+		{name: "schemeless bare host", raw: "twitch.tv/foo", want: "foo"},
+		{name: "uppercase schemeless host", raw: "WWW.TWITCH.TV/Foo", want: "foo"},
+		{name: "http URL", raw: "http://twitch.tv/foo", want: "foo"},
+		{name: "protocol-relative URL", raw: "//www.twitch.tv/foo", want: "foo"},
+		{name: "URL with query", raw: "www.twitch.tv/foo?ref=home", want: "foo"},
+		{name: "URL with trailing slash", raw: "https://www.twitch.tv/foo/", want: "foo"},
+		{name: "other host", raw: "https://example.com/foo", want: ""},
+		{name: "invalid login characters", raw: "www.twitch.tv/foo-bar", want: ""},
+		{name: "empty", raw: "", want: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := normalizeStreamerName(tt.raw); got != tt.want {
+				t.Fatalf("normalizeStreamerName(%q) = %q, want %q", tt.raw, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGetResponse(t *testing.T) {
 	t.Run("success returns body and sets user agent", func(t *testing.T) {
 		userAgents := make(chan string, 1)

@@ -63,3 +63,27 @@ func TestDelStreamer(t *testing.T) {
 		})
 	}
 }
+
+func TestAddStreamerWithSchemelessURL(t *testing.T) {
+	withTempHome(t)
+	writeStreamerList(t, "")
+
+	addStreamer([]string{"www.twitch.tv/foo"})
+
+	want := []string{"foo"}
+	if got := readStreamerList(t); !reflect.DeepEqual(got, want) {
+		t.Fatalf("list after add = %v, want %v", got, want)
+	}
+}
+
+func TestDelStreamerWithSchemelessURL(t *testing.T) {
+	withTempHome(t)
+	writeStreamerList(t, "foo\nbar\n")
+
+	delStreamer([]string{"www.twitch.tv/FOO"})
+
+	want := []string{"bar"}
+	if got := readStreamerList(t); !reflect.DeepEqual(got, want) {
+		t.Fatalf("list after delete = %v, want %v", got, want)
+	}
+}
