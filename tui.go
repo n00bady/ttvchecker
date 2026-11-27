@@ -28,7 +28,11 @@ type model struct {
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(tea.ClearScreen, refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
+	cmds := []tea.Cmd{tea.ClearScreen, m.spinner.Tick}
+	if len(m.streamerlist) > 0 {
+		cmds = append(cmds, refreshStreamer(m.streamerlist[0], 0))
+	}
+	return tea.Batch(cmds...)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -38,7 +42,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.table.SetWidth(msg.Width - 4)
-		m.table.SetHeight(findMin(msg.Height - 7, len(m.streamerlist) + 2)) // + 2 for the header and it's line
+		m.table.SetHeight(findMin(msg.Height-7, len(m.streamerlist)+2)) // + 2 for the header and it's line
 		m.table.SetColumns(
 			[]table.Column{
 				{Title: "#", Width: 3},
@@ -60,7 +64,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, tea.Println(err))
 			}
 		case "f5": // refresh the table
-			if !m.spin {
+			if !m.spin && len(m.streamerlist) > 0 {
 				m.spin = true
 				m.statusText = "Checking " + m.streamerlist[0] + "... "
 				cmds = append(cmds, refreshStreamer(m.streamerlist[0], 0), m.spinner.Tick)
@@ -68,8 +72,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c", "ctrl+d": // quit
 			return m, tea.Quit
 		case "enter": // select and open to default browser
-			m.statusText = "You selected " + m.table.SelectedRow()[1]
-			err := exec.Command("xdg-open", url+m.table.SelectedRow()[1]).Start()
+			row := m.table.SelectedRow()
+			if row == nil {
+				break // no results yet
+			}
+			m.statusText = "You selected " + row[1]
+			err := exec.Command("xdg-open", url+row[1]).Start()
 			if err != nil {
 				cmds = append(cmds, tea.Println(err))
 			}
